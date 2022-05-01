@@ -66,16 +66,18 @@ const Home: NextPage = () => {
       .then((res) => res.json())
       .then(
         (result) => {
-          console.log('API success:', result)
+          console.log('API success:', result.items)
           if (result.items && result.items.length !== 0) {
             const firstItem = result.items[0]
-            setVideos(firstItem.id.videos)
-            // const videosId = result.items.map((v, i) => {
-            //   return v.id.videos
-            // })
-            // console.log('videosId', videosId)
+            setVideos(firstItem.id.videoId)
+            console.log('videos', videos)
+
+            const videosId = result.items.map((v, i) => {
+              return v.id.videoId
+            })
+            console.log('videosId', videosId)
             // setVideos(result.items)
-            console.log('id: ', result.items.id)
+            console.log('id: ', result.items[0].id)
           }
         },
         (error) => {
@@ -159,6 +161,7 @@ const Home: NextPage = () => {
             width='640'
             height='360'
             src={'https://www.youtube.com/embed/' + videos}
+            // src={'https://www.youtube.com/embed/' + 'oEbtRMeZR24'}
             frameBorder='0'
             allowFullScreen
           />
