@@ -13,8 +13,7 @@ const Home: NextPage = () => {
   // const apikey = String(process.env.NEXT_PUBLIC_YOUTUBE_APIKEY);
   const apikey = String(process.env.NEXT_PUBLIC_YOUTUBE_APIKEY2)
   const channelID = 'UCBL4qbfyteUA-KGj3_9G1LA'
-  const playListUrl =
-    'https://www.googleapis.com/youtube/v3/playlistItems?part=snippet&playlistId=UUacLlgUxCnIUegABaDTslyg&maxResults=15&key=AIzaSyD89NRr2V5nOPoEMdY3YeQ1D0YvL6ohp5E'
+  const playListUrl = `https://www.googleapis.com/youtube/v3/playlistItems?part=snippet&playlistId=UUacLlgUxCnIUegABaDTslyg&maxResults=15&key=${apikey}`
 
   // useEffect(()=>{
   // fetch(
