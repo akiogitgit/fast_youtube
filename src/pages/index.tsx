@@ -9,26 +9,34 @@ interface videos {}
 
 const Home: NextPage = () => {
   const { data: session } = useSession()
-  // const apikey = String(process.env.NEXT_PUBLIC_YOUTUBE_APIKEY)
-  const apikey = String(process.env.NEXT_PUBLIC_YOUTUBE_APIKEY2)
+  const apikey = String(process.env.NEXT_PUBLIC_YOUTUBE_APIKEY)
+  // const apikey = String(process.env.NEXT_PUBLIC_YOUTUBE_APIKEY2)
   const channelID = 'UCBL4qbfyteUA-KGj3_9G1LA'
-  const playListUrl =
-    'https://www.googleapis.com/youtube/v3/playlistItems?part=snippet&playlistId=UUacLlgUxCnIUegABaDTslyg&maxResults=15&key=AIzaSyD89NRr2V5nOPoEMdY3YeQ1D0YvL6ohp5E'
+  const playListUrl = `https://www.googleapis.com/youtube/v3/playlistItems?part=snippet&playlistId=UUacLlgUxCnIUegABaDTslyg&maxResults=15&key=${apikey}`
 
-  // useEffect(()=>{
-  // fetch(
-  //   "https://www.googleapis.com/youtube/v3/channels?part=" +
-  //     "snippet" +
-  //     "&id=" +
-  //     channelID +
-  //     "&key=" +
-  //     apikey
-  // ).then((res) => res.json())
-  // .then((res) => {
-  //   const res1 =res.result;
-  //   console.log("res1",res1)
-  // })
-  // },[])
+  useEffect(() => {
+    const url = 'https://www.googleapis.com/youtube/v3/channels?part=snippet'
+    const params = {
+      id: channelID,
+      key: apikey,
+    }
+    const queryParams = new URLSearchParams(params)
+    fetch(url + queryParams)
+      // fetch(
+      //   "https://www.googleapis.com/youtube/v3/channels?part=" +
+      //     "snippet" +
+      //     "&id=" +
+      //     channelID +
+      //     "&key=" +
+      //     apikey
+      // )
+      .then((res) => res.json())
+      .then((res) => {
+        const res1 = res.result
+        console.log('res1', res1)
+      })
+  }, [])
+
   // const [videos, setVideos] = useState()
   // const url = `https://www.googleapis.com/youtube/v3/search?type=video&part=snippet&q=apple&maxResults=3&key=${apikey}`;
   // useEffect(()=>{
@@ -56,7 +64,7 @@ const Home: NextPage = () => {
   useEffect(() => {
     const params = {
       key: apikey,
-      q: searchWord, // 検索ワード
+      q: 'にゃんこ' + searchWord, // 検索ワード
       type: 'video',
       maxResults: '5', // 取得数
       order: 'viewCount', // 再生数順
@@ -76,9 +84,6 @@ const Home: NextPage = () => {
               return v.id.videoId
             })
             setVideos(videosId)
-            console.log('videos, ', videos)
-            console.log('videosId', videosId)
-            // console.log('id: ', result.items[0].id)
           }
         },
         (error) => {
@@ -166,7 +171,6 @@ const Home: NextPage = () => {
             />
           </form>
           <div onClick={() => setSearchWord('わんこ')}>わんこ</div>
-          <div onClick={() => setSearchWord('又三郎')}>又三郎</div>
           {videos &&
             videos.map((v, i) => (
               <div key={i}>
