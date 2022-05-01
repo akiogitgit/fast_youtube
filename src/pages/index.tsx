@@ -2,7 +2,7 @@ import type { NextPage } from 'next'
 import Head from 'next/head'
 import Image from 'next/image'
 import { useSession, signIn, signOut } from 'next-auth/react'
-import { useEffect, useState } from 'react'
+import React, { useCallback, useEffect, useState } from 'react'
 import axios from 'axios'
 
 interface videos {}
@@ -47,9 +47,10 @@ const Home: NextPage = () => {
   //   .then(res => {
   //     console.log("res=> ",res.json)
   //   })
-  const [videos, setVideos] = useState('')
-  // const [videos, setVideos] = useState([])
-  const [searchWord, setSearchWord] = useState('にゃんこ')
+  // const [videos, setVideos] = useState('')
+  const [videos, setVideos] = useState<string[]>([''])
+  const [word, setWord] = useState<string>('')
+  const [searchWord, setSearchWord] = useState<string>('にゃんこ')
 
   const search_api_url = 'https://www.googleapis.com/youtube/v3/search?'
   // const search_api_url = "https://www.googleapis.com/youtube/v3/channel?"
@@ -68,16 +69,17 @@ const Home: NextPage = () => {
         (result) => {
           console.log('API success:', result.items)
           if (result.items && result.items.length !== 0) {
-            const firstItem = result.items[0]
-            setVideos(firstItem.id.videoId)
-            console.log('videos', videos)
+            // const firstItem = result.items[0]
+            // setVideos(firstItem.id.videoId)
+            // console.log('videos', videos)
 
             const videosId = result.items.map((v, i) => {
               return v.id.videoId
             })
+            setVideos(videosId)
+            console.log('videos, ', videos)
             console.log('videosId', videosId)
-            // setVideos(result.items)
-            console.log('id: ', result.items[0].id)
+            // console.log('id: ', result.items[0].id)
           }
         },
         (error) => {
@@ -85,6 +87,17 @@ const Home: NextPage = () => {
         }
       )
   }, [searchWord, apikey])
+
+  const onSearch = useCallback(
+    (e: React.FormEvent<HTMLFormElement>) => {
+      e.preventDefault()
+      setSearchWord(word)
+    },
+    [word]
+  )
+  const changeWord = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    setWord(e.target.value)
+  }, [])
 
   // const youtube = axios.create({
   //   baseURL: 'https://www.googleapis.com/youtube/v3'
@@ -140,23 +153,35 @@ const Home: NextPage = () => {
           <h1 className='text-red-500 text-[10px]'>
             Welcome to <a href='https://nextjs.org'>Next.js!</a>
           </h1>
+          <form onSubmit={(e) => onSearch(e)}>
+            <input
+              type='text'
+              value={word}
+              onChange={changeWord}
+              className='border border-black'
+            />
+            <input
+              type='submit'
+              value='検索'
+              className='ml-2 border border-black'
+            />
+          </form>
           <div onClick={() => setSearchWord('わんこ')}>わんこ</div>
-          <div onClick={() => setSearchWord('にゃんこ')}>にゃんこ</div>
-          {/* <div>{videos}</div> */}
-          {/* {videos &&
-              videos.map((v, i) => (
-                <div key={i}>
-                  <iframe
-                    id='player'
-                    width='640'
-                    height='360'
-                    src={'https://www.youtube.com/embed/' + v.id.videos}
-                    frameBorder='0'
-                    allowFullScreen
-                  />
-                </div>
-              ))} */}
-          <iframe
+          <div onClick={() => setSearchWord('又三郎')}>又三郎</div>
+          {videos &&
+            videos.map((v, i) => (
+              <div key={i}>
+                <iframe
+                  id='player'
+                  width='640'
+                  height='360'
+                  src={'https://www.youtube.com/embed/' + v}
+                  frameBorder='0'
+                  allowFullScreen
+                />
+              </div>
+            ))}
+          {/* <iframe
             id='player'
             width='640'
             height='360'
@@ -164,7 +189,7 @@ const Home: NextPage = () => {
             // src={'https://www.youtube.com/embed/' + 'oEbtRMeZR24'}
             frameBorder='0'
             allowFullScreen
-          />
+          /> */}
         </div>
       </main>
       <footer></footer>
