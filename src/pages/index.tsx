@@ -52,7 +52,6 @@ const Home: NextPage = () => {
   useEffect(()=>{
     const params = {
       key: apikey,
-      // key: "AIzaSyD89NRr2V5nOPoEMdY3YeQ1D0YvL6ohp5E",
       q: "にゃんこ", // 検索ワード
       type: "video",
       maxResults: "5", // 取得数
