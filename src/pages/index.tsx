@@ -1,9 +1,8 @@
 import type { NextPage } from 'next'
 import Head from 'next/head'
-import Image from 'next/image'
+import Link from 'next/link'
 import { useSession, signIn, signOut } from 'next-auth/react'
 import React, { useCallback, useEffect, useState } from 'react'
-import axios from 'axios'
 
 interface videos {}
 
@@ -14,47 +13,6 @@ const Home: NextPage = () => {
   const channelID = 'UCBL4qbfyteUA-KGj3_9G1LA'
   const playListUrl = `https://www.googleapis.com/youtube/v3/playlistItems?part=snippet&playlistId=UUacLlgUxCnIUegABaDTslyg&maxResults=15&key=${apikey}`
 
-  useEffect(() => {
-    const url = 'https://www.googleapis.com/youtube/v3/channels?part=snippet'
-    const params = {
-      id: channelID,
-      key: apikey,
-    }
-    const queryParams = new URLSearchParams(params)
-    fetch(url + queryParams)
-      // fetch(
-      //   "https://www.googleapis.com/youtube/v3/channels?part=" +
-      //     "snippet" +
-      //     "&id=" +
-      //     channelID +
-      //     "&key=" +
-      //     apikey
-      // )
-      .then((res) => res.json())
-      .then((res) => {
-        const res1 = res.result
-        console.log('res1', res1)
-      })
-  }, [])
-
-  // const [videos, setVideos] = useState()
-  // const url = `https://www.googleapis.com/youtube/v3/search?type=video&part=snippet&q=apple&maxResults=3&key=${apikey}`;
-  // useEffect(()=>{
-  //   fetch(url)
-  //     .then(res => {
-  //           setVideos(res.json())
-  //     })
-  //     .catch(() => {
-  //         console.log('通信に失敗しました');
-  //     });
-  //   },[])
-  //   console.log("video=>",videos)
-
-  //   fetch(url)
-  //   .then(res => {
-  //     console.log("res=> ",res.json)
-  //   })
-  // const [videos, setVideos] = useState('')
   const [videos, setVideos] = useState<string[]>([''])
   const [word, setWord] = useState<string>('')
   const [searchWord, setSearchWord] = useState<string>('にゃんこ')
@@ -103,33 +61,6 @@ const Home: NextPage = () => {
     setWord(e.target.value)
   }, [])
 
-  // const youtube = axios.create({
-  //   baseURL: 'https://www.googleapis.com/youtube/v3'
-  // })
-  // const fetchPopularData = async() => {
-  //   return await youtube.get('/videos', {
-  //     params: {
-  //         part: 'snippet',
-  //         maxResults: 40,
-  //         key: apikey,
-  //         regionCode: 'JP',
-  //         type: 'video',
-  //         chart: 'mostPopular'
-  //     }
-  //   })
-  // }
-  // console.log("fetch!: ",fetchPopularData.apply)
-
-  // const ytid = 'Z-UJbyLqioM'; // 動画ID
-  // const url23 = 'https://www.googleapis.com/youtube/v3/videos';
-  //   +'?part=statistics'
-  //   + '&id=' + ytid
-  //   + '&key=' + apikey
-  // fetch(url23).then((res) => res.json())
-  // .then((res) => {
-  //   console.log("res,,: ",res)
-  // })
-
   return (
     <div>
       <Head>
@@ -149,6 +80,9 @@ const Home: NextPage = () => {
               LogIn
             </button>
           )}
+          <div className='float-right'>
+            <Link href='/youtubeTest'>test</Link>
+          </div>
         </div>
       </header>
 
