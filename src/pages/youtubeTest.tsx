@@ -15,17 +15,18 @@ const YoutubeTest: NextPage = () => {
   const [order, setOrder] = useState<string>('viewCount')
 
   const search_api_url = 'https://www.googleapis.com/youtube/v3/search?'
-  const search_channel_url = 'https://www.googleapis.com/youtube/v3/channel?'
+  // const search_channel_url = 'https://www.googleapis.com/youtube/v3/channel?'
 
   useEffect(() => {
     const params = {
       part: 'snippet',
       key: apikey,
-      channelId: channelID,
-      // type: 'channel', // video, channel, playlist
-      type: 'video',
-      maxResults: '2', // 取得数
-      order: order, // 再生数順
+      type: 'channel', // video, channel, playlist
+      q: 'KIYOisGOD',
+      // type: 'video',
+      // channelId: channelID,
+      // maxResults: '2', // 取得数
+      // order: order, // 再生数順
     }
     const queryParams = new URLSearchParams(params)
     fetch(search_api_url + queryParams)
@@ -33,12 +34,12 @@ const YoutubeTest: NextPage = () => {
       .then(
         (result) => {
           console.log('API Hikakin:', result)
-          if (result.items && result.items.length !== 0) {
-            const videosId = result.items.map((v, i) => {
-              return v.id.videoId
-            })
-            setVideos(videosId)
-          }
+          // if (result.items && result.items.length !== 0) {
+          //   const videosId = result.items.map((v, i) => {
+          //     return v.id.videoId
+          //   })
+          //   setVideos(videosId)
+          // }
         },
         (error) => {
           console.error('err=>', error)
@@ -48,18 +49,20 @@ const YoutubeTest: NextPage = () => {
 
   // useEffect(() => {
   //   const params = {
+  //     part: 'snippet',
   //     key: apikey,
-  //     q: 'にゃんこ' + searchWord, // 検索ワード
+  //     channelId: channelID,
+  //     // type: 'channel', // video, channel, playlist
   //     type: 'video',
-  //     maxResults: '5', // 取得数
-  //     order: 'viewCount', // 再生数順
+  //     maxResults: '2', // 取得数
+  //     order: order, // 再生数順
   //   }
   //   const queryParams = new URLSearchParams(params)
   //   fetch(search_api_url + queryParams)
   //     .then((res) => res.json())
   //     .then(
   //       (result) => {
-  //         console.log('API success:', result.items)
+  //         console.log('API Hikakin:', result)
   //         if (result.items && result.items.length !== 0) {
   //           const videosId = result.items.map((v, i) => {
   //             return v.id.videoId
@@ -71,7 +74,7 @@ const YoutubeTest: NextPage = () => {
   //         console.error('err=>', error)
   //       }
   //     )
-  // }, [searchWord, apikey])
+  // }, [order, apikey])
 
   const onSearch = useCallback(
     (e: React.FormEvent<HTMLFormElement>) => {
