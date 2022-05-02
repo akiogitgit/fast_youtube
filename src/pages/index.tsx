@@ -24,7 +24,7 @@ const Home: NextPage = () => {
       key: apikey,
       q: 'にゃんこ' + searchWord, // 検索ワード
       type: 'video',
-      maxResults: '3', // 取得数
+      maxResults: '2', // 取得数
       order: 'viewCount', // 再生数順
     }
     const queryParams = new URLSearchParams(params)

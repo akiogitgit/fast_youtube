@@ -24,7 +24,7 @@ const YoutubeTest: NextPage = () => {
       channelId: channelID,
       // type: 'channel', // video, channel, playlist
       type: 'video',
-      maxResults: '3', // 取得数
+      maxResults: '2', // 取得数
       order: order, // 再生数順
     }
     const queryParams = new URLSearchParams(params)
