@@ -6,7 +6,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint --dir src",
+    "lint:fix": "yarn lint --fix"
   },
   "dependencies": {
     "axios": "^0.27.2",
@@ -24,6 +25,7 @@
     "eslint-config-next": "12.1.5",
     "eslint-config-prettier": "^8.5.0",
     "eslint-plugin-import": "^2.26.0",
+    "eslint-plugin-prettier": "^4.0.0",
     "eslint-plugin-react-hooks": "^4.5.0",
     "eslint-plugin-unused-imports": "^2.0.0",
     "postcss": "^8.4.12",

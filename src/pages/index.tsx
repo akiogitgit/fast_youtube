@@ -24,7 +24,7 @@ const Home: NextPage = () => {
       key: apikey,
       q: 'にゃんこ' + searchWord, // 検索ワード
       type: 'video',
-      maxResults: '5', // 取得数
+      maxResults: '2', // 取得数
       order: 'viewCount', // 再生数順
     }
     const queryParams = new URLSearchParams(params)
@@ -32,7 +32,7 @@ const Home: NextPage = () => {
       .then((res) => res.json())
       .then(
         (result) => {
-          console.log('API success:', result.items)
+          console.log('API success:', result)
           if (result.items && result.items.length !== 0) {
             // const firstItem = result.items[0]
             // setVideos(firstItem.id.videoId)
