@@ -2,6 +2,13 @@ import { NextPage } from 'next'
 import Link from 'next/link'
 import { useCallback, useEffect, useState } from 'react'
 
+interface videoInfo {
+  commentCount: number
+  favoriteCount: number
+  likeCount: number
+  viewCount: number
+}
+
 const YoutubeTest: NextPage = () => {
   const apikey = String(process.env.NEXT_PUBLIC_YOUTUBE_APIKEY)
   // const apikey = String(process.env.NEXT_PUBLIC_YOUTUBE_APIKEY2)
@@ -14,6 +21,7 @@ const YoutubeTest: NextPage = () => {
   const [searchWord, setSearchWord] = useState<string>('キヨ')
   const [channelID, setChannelID] = useState<string>('UCZf__ehlCEBPop-_sldpBUQ')
   const [order, setOrder] = useState<string>('date') //viewCount
+  const [videoInfo, setVideoInfo] = useState<videoInfo[]>([])
 
   const search_api_url = 'https://www.googleapis.com/youtube/v3/search?'
   const videos_api_url = 'https://www.googleapis.com/youtube/v3/videos?'
@@ -91,32 +99,27 @@ const YoutubeTest: NextPage = () => {
       part: 'statistics', // snippet タイトルサムネとか
       key: apikey,
       id: (videos[0], videos[1]),
-      // channelId: channelID,
-      // type: 'channel', // video, channel, playlist
-      // type: 'video',
-      // maxResults: '2', // 取得数
-      // order: order, // 再生数順
     }
     const queryParams = new URLSearchParams(params)
     const video_url =
       videos_api_url +
       'part=statistics' +
       `&key=${apikey}` +
-      // `&id=${videos[0]},${videos[1]}`
       `&id=${videos.map((v, i) => v + ',')}`
-    // videos.map((v,i)=>v+",")
-    // fetch(videos_api_url + queryParams)
     fetch(video_url)
       .then((res) => res.json())
       .then(
         (result) => {
           console.log('動画情報:', result)
-          // if (result.items && result.items.length !== 0) {
-          //   const videosId = result.items.map((v, i) => {
-          //     return v.id.videoId
-          //   })
-          //   setVideos(videosId)
-          // }
+          if (result.items && result.items.length !== 0) {
+            const videosId = result.items.map((v, i) => {
+              return v.statistics
+            })
+            setVideoInfo(videosId)
+            console.log('info:', videoInfo)
+            // console.log('info[1]:', result[1])
+            // console.log('comment:', result[1].commentCount)
+          }
         },
         (error) => {
           console.error('err=>', error)
@@ -174,6 +177,11 @@ const YoutubeTest: NextPage = () => {
                 allowFullScreen
               />
               <p>URL: https://www.youtube.com/watch?v={v}</p>
+              <ul>
+                <li>再生回数：{videoInfo[i].viewCount}</li>
+                <li>いいね数：{videoInfo[i].likeCount}</li>
+                <li>コメント数：{videoInfo[i].commentCount}</li>
+              </ul>
             </div>
           ))}
       </div>
