@@ -12,9 +12,6 @@ interface videoInfo {
 const YoutubeTest: NextPage = () => {
   const apikey = String(process.env.NEXT_PUBLIC_YOUTUBE_APIKEY)
   // const apikey = String(process.env.NEXT_PUBLIC_YOUTUBE_APIKEY2)
-  // const channelID = 'UCBL4qbfyteUA-KGj3_9G1LA'
-  // const channelID = 'KIYOisGOD'
-  // const channelID = 'UCZf__ehlCEBPop-_sldpBUQ' // HikakinTV
 
   const [videos, setVideos] = useState<string[]>([''])
   const [word, setWord] = useState<string>('')
@@ -112,13 +109,11 @@ const YoutubeTest: NextPage = () => {
         (result) => {
           console.log('動画情報:', result)
           if (result.items && result.items.length !== 0) {
-            const videosId = result.items.map((v, i) => {
+            const info = result.items.map((v, i) => {
               return v.statistics
             })
-            setVideoInfo(videosId)
+            setVideoInfo(info)
             console.log('info:', videoInfo)
-            // console.log('info[1]:', result[1])
-            // console.log('comment:', result[1].commentCount)
           }
         },
         (error) => {
@@ -177,6 +172,7 @@ const YoutubeTest: NextPage = () => {
                 allowFullScreen
               />
               <p>URL: https://www.youtube.com/watch?v={v}</p>
+              <a href={`https://www.youtube.com/watch?v={v}`}>youtube で見る</a>
               <ul>
                 <li>再生回数：{videoInfo[i].viewCount}</li>
                 <li>いいね数：{videoInfo[i].likeCount}</li>
