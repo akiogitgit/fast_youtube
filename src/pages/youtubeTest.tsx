@@ -16,6 +16,7 @@ const YoutubeTest: NextPage = () => {
   const [order, setOrder] = useState<string>('date') //viewCount
 
   const search_api_url = 'https://www.googleapis.com/youtube/v3/search?'
+  const videos_api_url = 'https://www.googleapis.com/youtube/v3/videos?'
   // const search_channel_url = 'https://www.googleapis.com/youtube/v3/channel?'
 
   // チャンネル名からchannelIdを取得
@@ -35,7 +36,7 @@ const YoutubeTest: NextPage = () => {
       .then((res) => res.json())
       .then(
         (result) => {
-          console.log('API Hikakin:', result)
+          console.log('channel情報:', result)
           console.log('channelID:', result.items[0].id.channelId)
           // console.log('channelID:', result[0].id.channelId)
           // console.log('タイトル:', result[0].snippet.channelTitle)
@@ -62,7 +63,7 @@ const YoutubeTest: NextPage = () => {
       channelId: channelID,
       // type: 'channel', // video, channel, playlist
       type: 'video',
-      maxResults: '2', // 取得数
+      maxResults: '3', // 取得数
       order: order, // 再生数順
     }
     const queryParams = new URLSearchParams(params)
@@ -70,7 +71,7 @@ const YoutubeTest: NextPage = () => {
       .then((res) => res.json())
       .then(
         (result) => {
-          console.log('API Hikakin:', result)
+          console.log('videoId:', result)
           if (result.items && result.items.length !== 0) {
             const videosId = result.items.map((v, i) => {
               return v.id.videoId
@@ -83,6 +84,45 @@ const YoutubeTest: NextPage = () => {
         }
       )
   }, [order, apikey, channelID])
+
+  // videoIdから再生回数を取得
+  useEffect(() => {
+    const params = {
+      part: 'statistics', // snippet タイトルサムネとか
+      key: apikey,
+      id: (videos[0], videos[1]),
+      // channelId: channelID,
+      // type: 'channel', // video, channel, playlist
+      // type: 'video',
+      // maxResults: '2', // 取得数
+      // order: order, // 再生数順
+    }
+    const queryParams = new URLSearchParams(params)
+    const video_url =
+      videos_api_url +
+      'part=statistics' +
+      `&key=${apikey}` +
+      // `&id=${videos[0]},${videos[1]}`
+      `&id=${videos.map((v, i) => v + ',')}`
+    // videos.map((v,i)=>v+",")
+    // fetch(videos_api_url + queryParams)
+    fetch(video_url)
+      .then((res) => res.json())
+      .then(
+        (result) => {
+          console.log('動画情報:', result)
+          // if (result.items && result.items.length !== 0) {
+          //   const videosId = result.items.map((v, i) => {
+          //     return v.id.videoId
+          //   })
+          //   setVideos(videosId)
+          // }
+        },
+        (error) => {
+          console.error('err=>', error)
+        }
+      )
+  }, [videos, apikey])
 
   const onSearch = useCallback(
     (e: React.FormEvent<HTMLFormElement>) => {
@@ -133,6 +173,7 @@ const YoutubeTest: NextPage = () => {
                 frameBorder='0'
                 allowFullScreen
               />
+              <p>URL: https://www.youtube.com/watch?v={v}</p>
             </div>
           ))}
       </div>
