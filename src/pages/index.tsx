@@ -19,36 +19,36 @@ const Home: NextPage = () => {
 
   const search_api_url = 'https://www.googleapis.com/youtube/v3/search?'
   // const search_api_url = "https://www.googleapis.com/youtube/v3/channel?"
-  useEffect(() => {
-    const params = {
-      key: apikey,
-      q: 'にゃんこ' + searchWord, // 検索ワード
-      type: 'video',
-      maxResults: '2', // 取得数
-      order: 'viewCount', // 再生数順
-    }
-    const queryParams = new URLSearchParams(params)
-    fetch(search_api_url + queryParams)
-      .then((res) => res.json())
-      .then(
-        (result) => {
-          console.log('API success:', result)
-          if (result.items && result.items.length !== 0) {
-            // const firstItem = result.items[0]
-            // setVideos(firstItem.id.videoId)
-            // console.log('videos', videos)
+  // useEffect(() => {
+  //   const params = {
+  //     key: apikey,
+  //     q: 'にゃんこ' + searchWord, // 検索ワード
+  //     type: 'video',
+  //     maxResults: '2', // 取得数
+  //     order: 'viewCount', // 再生数順
+  //   }
+  //   const queryParams = new URLSearchParams(params)
+  //   fetch(search_api_url + queryParams)
+  //     .then((res) => res.json())
+  //     .then(
+  //       (result) => {
+  //         console.log('API success:', result)
+  //         if (result.items && result.items.length !== 0) {
+  //           // const firstItem = result.items[0]
+  //           // setVideos(firstItem.id.videoId)
+  //           // console.log('videos', videos)
 
-            const videosId = result.items.map((v, i) => {
-              return v.id.videoId
-            })
-            setVideos(videosId)
-          }
-        },
-        (error) => {
-          console.error('err=>', error)
-        }
-      )
-  }, [searchWord, apikey])
+  //           const videosId = result.items.map((v, i) => {
+  //             return v.id.videoId
+  //           })
+  //           setVideos(videosId)
+  //         }
+  //       },
+  //       (error) => {
+  //         console.error('err=>', error)
+  //       }
+  //     )
+  // }, [searchWord, apikey])
 
   const onSearch = useCallback(
     (e: React.FormEvent<HTMLFormElement>) => {
