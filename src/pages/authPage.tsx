@@ -1,12 +1,28 @@
 import type { NextPage } from 'next'
 import { useSession, signIn, signOut } from 'next-auth/react'
 import Link from 'next/link'
-import React, { useEffect } from 'react'
+import React, { useEffect, useState } from 'react'
+import { GoogleLogin, GoogleLogout } from 'react-google-login'
 
 const AuthPage: NextPage = () => {
   // https://www.googleapis.com/oauth2/v3/tokeninfo?access_token=アクセストークン
   // https://www.googleapis.com/youtube/v3/channels?part=id&mine=true&key=APIKEY
   const { data: session } = useSession()
+  const [accessToken, setAccessToken] = useState('')
+
+  const onSuccess = (
+    res:
+      | ReactGoogleLogin.GoogleLoginResponse
+      | ReactGoogleLogin.GoogleLoginResponseOffline
+  ) => {
+    if ('accessToken' in res) {
+      console.log(res.accessToken)
+      setAccessToken(res.accessToken)
+    }
+  }
+  const onFailure = (res: any) => {
+    alert(JSON.stringify(res))
+  }
 
   const apikey = String(process.env.NEXT_PUBLIC_YOUTUBE_APIKEY)
   // const apikey = String(process.env.NEXT_PUBLIC_YOUTUBE_APIKEY2)
@@ -17,15 +33,9 @@ const AuthPage: NextPage = () => {
       part: 'id',
       mine: 'true',
       key: apikey,
-      access_token: String(session?.accessToken),
+      // access_token: String(session?.accessToken),
+      access_token: accessToken,
     }
-    // const params = {
-    //   part: 'snippet',
-    //   key: apikey,
-    //   type: 'channel', // video, channel, playlist
-    //   q: "a", // キヨ、KIYOisGOD
-    //   maxResults: '1', // 取得数
-    // }
     console.log('accessToken', session?.accessToken)
     const queryParams = new URLSearchParams(params)
     fetch(search_channel_url + queryParams)
@@ -38,7 +48,7 @@ const AuthPage: NextPage = () => {
           console.error('err=>', error)
         }
       )
-  }, [session])
+  }, [session, accessToken])
 
   return (
     <>
@@ -62,6 +72,34 @@ const AuthPage: NextPage = () => {
       <div>{session?.user?.name}</div>
       <div>{session?.accessToken}</div>
       {console.log(session)}
+
+      <div>
+        {accessToken === '' ? (
+          <>
+            {/* ページ遷移で消えるからヘッダーでやる */}
+            <GoogleLogin
+              clientId={String(process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID)}
+              buttonText='Login'
+              isSignedIn={true}
+              onSuccess={onSuccess}
+              onFailure={onFailure}
+              scope='https://www.googleapis.com/auth/youtube'
+              cookiePolicy={'single_host_origin'}
+            />
+          </>
+        ) : (
+          <>
+            <div className='mt-10'>react-google-auth!</div>
+            {accessToken}
+
+            {/* Logout出来ないけど、後回し */}
+            <GoogleLogout
+              clientId={String(process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID)}
+              buttonText='Logout'
+            ></GoogleLogout>
+          </>
+        )}
+      </div>
     </>
   )
 }
