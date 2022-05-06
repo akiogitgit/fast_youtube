@@ -30,34 +30,45 @@ const Home: NextPage = () => {
   const channelID = 'UCMJiPpN_09F0aWpQrgbc_qg' //配列にする
 
   const [videos, setVideos] = useState<string[]>([''])
-  const [channels, setChannels] = useState<string[]>([])
+  const [channels, setChannels] = useState<string[]>([''])
   // const [word, setWord] = useState<string>('')
   // const [searchWord, setSearchWord] = useState<string>('にゃんこ')
 
   // 登録しているチャンネルidを取得
   const search_channel_url = 'https://www.googleapis.com/youtube/v3/channels?'
+  const subscript_url = 'https://www.googleapis.com/youtube/v3/subscriptions?'
   // チャンネル毎の動画を取得
   const search_api_url = 'https://www.googleapis.com/youtube/v3/search?'
 
-  // channelIdを取得
+  // channelIdを取得 subscriptions
   useEffect(() => {
     const params = {
-      part: 'id',
+      part: 'snippet',
       mine: 'true',
       key: apikey,
       access_token: accessToken,
     }
     const queryParams = new URLSearchParams(params)
-    fetch(search_channel_url + queryParams)
+    fetch(subscript_url + queryParams)
       .then((res) => res.json())
       .then(
         (result) => {
           console.log('channel情報:', result)
-          const channelId = result.items.map((v, i) => {
-            return v.id.channelId
-          })
-          // setChannels
-          setChannels(channelId)
+          if (result.items && result.items.length !== 0) {
+            const channelId = result.items.map((v, i) => {
+              sessionStorage.setItem(
+                v.snippet.title,
+                v.snippet.resourceId.channelId
+              )
+              return v.snippet.resourceId.channelId
+            })
+            setChannels(channelId)
+            // console.log('resourcedId: ', result.items[0].snippet.resourceId)
+            console.log('channels: ', channels)
+            // まとめるなら,区切りの文字列か、一つ一つやるか
+            // 消したり追加を考えると一つ一つの方が楽
+            sessionStorage.setItem('channelId', channels.join())
+          }
         },
         (error) => {
           console.error('err=>', error)
@@ -144,6 +155,34 @@ const Home: NextPage = () => {
       </header>
 
       <main>
+        <div>
+          {accessToken === '' ? (
+            <>
+              {/* ページ遷移で消えるからヘッダーでやる */}
+              <GoogleLogin
+                clientId={String(process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID)}
+                buttonText='Login'
+                isSignedIn={true}
+                onSuccess={onSuccess}
+                onFailure={onFailure}
+                scope='https://www.googleapis.com/auth/youtube'
+                cookiePolicy={'single_host_origin'}
+              />
+            </>
+          ) : (
+            <>
+              <div className='mt-10'>react-google-auth!</div>
+              {accessToken}
+
+              {/* Logout出来ないけど、後回し */}
+              <GoogleLogout
+                clientId={String(process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID)}
+                buttonText='Logout'
+              ></GoogleLogout>
+            </>
+          )}
+        </div>
+
         <div>
           <h1 className='text-red-500 text-[10px]'>
             Welcome to <a href='https://nextjs.org'>Next.js!</a>
