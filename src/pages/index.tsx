@@ -56,17 +56,15 @@ const Home: NextPage = () => {
           console.log('channel情報:', result)
           if (result.items && result.items.length !== 0) {
             const channelId = result.items.map((v, i) => {
-              sessionStorage.setItem(
-                v.snippet.title,
-                v.snippet.resourceId.channelId
-              )
+              // sessionStorage.setItem(
+              //   v.snippet.title,
+              //   v.snippet.resourceId.channelId
+              // )
               return v.snippet.resourceId.channelId
             })
             setChannels(channelId)
             // console.log('resourcedId: ', result.items[0].snippet.resourceId)
             console.log('channels: ', channels)
-            // まとめるなら,区切りの文字列か、一つ一つやるか
-            // 消したり追加を考えると一つ一つの方が楽
             sessionStorage.setItem('channelId', channels.join())
           }
         },
@@ -74,7 +72,7 @@ const Home: NextPage = () => {
           console.error('err=>', error)
         }
       )
-  }, [accessToken])
+  }, [apikey, accessToken])
 
   // 動画を取得
   useEffect(() => {
