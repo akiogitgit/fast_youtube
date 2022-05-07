@@ -40,6 +40,15 @@ const Home: NextPage = () => {
   // チャンネル毎の動画を取得
   const search_api_url = 'https://www.googleapis.com/youtube/v3/search?'
 
+  const getApi = async (url: string) => {
+    try {
+      const res = await fetch(url)
+      return await res.json()
+    } catch (err) {
+      throw err
+    }
+  }
+
   // channelIdを取得 subscriptions
   useEffect(() => {
     const params = {
@@ -49,33 +58,31 @@ const Home: NextPage = () => {
       access_token: accessToken,
     }
     const queryParams = new URLSearchParams(params)
-    fetch(subscript_url + queryParams)
-      .then((res) => res.json())
-      .then(
-        (result) => {
-          console.log('channel情報:', result)
-          if (result.items && result.items.length !== 0) {
-            const channelId = result.items.map((v, i) => {
-              // sessionStorage.setItem(
-              //   v.snippet.title,
-              //   v.snippet.resourceId.channelId
-              // )
-              return v.snippet.resourceId.channelId
-            })
-            setChannels(channelId)
-            // console.log('resourcedId: ', result.items[0].snippet.resourceId)
-            console.log('channels: ', channels)
-            sessionStorage.setItem('channelId', channels.join())
-          }
-        },
-        (error) => {
-          console.error('err=>', error)
+    getApi(subscript_url + queryParams).then(
+      (result) => {
+        console.log('channel情報:', result)
+        if (result.items && result.items.length !== 0) {
+          let channelId = result.items.map((v, i) => {
+            return v.snippet.resourceId.channelId
+          })
+          // setChannels(channelId)
+          // console.log('resourcedId: ', result.items[0].snippet.resourceId)
+          console.log('channeId: ', channelId)
+          // console.log('channels: ', channels)
+          sessionStorage.setItem('channelId', channelId.join())
         }
-      )
+      },
+      (err) => {
+        console.error('err=>', err)
+      }
+    )
   }, [apikey, accessToken])
 
   // 動画を取得
-  useEffect(() => {
+  // useEffect(() => {
+  if (sessionStorage.getItem('channelId')) {
+    const channeIds = sessionStorage.getItem('channelId')?.split(',')
+    console.log('session: ', channeIds)
     const params = {
       part: 'snippet',
       key: apikey,
@@ -85,35 +92,34 @@ const Home: NextPage = () => {
       order: 'data',
     }
     const queryParams = new URLSearchParams(params)
-    fetch(search_api_url + queryParams)
-      .then((res) => res.json())
-      .then(
-        (result) => {
-          console.log('API success:', result)
-          if (result.items && result.items.length !== 0) {
-            // titleもチャンネル名もいらない(iframeでおけ)
-            // 縦方向がチャンネル、横方向が同じチャンネルの動画
-            const videosId = result.items.map((v, i) => {
-              return v.id.videoId
-            })
-            setVideos(videosId)
+    getApi(search_api_url + queryParams).then(
+      (result) => {
+        console.log('API success:', result)
+        if (result.items && result.items.length !== 0) {
+          // titleもチャンネル名もいらない(iframeでおけ)
+          // 縦方向がチャンネル、横方向が同じチャンネルの動画
+          const videosId = result.items.map((v, i) => {
+            return v.id.videoId
+          })
+          setVideos(videosId)
 
-            // let arr: videos[] = []
-            // result.items.map((v, i) => {
-            //   arr.push({
-            //     videoId: v.id.videoId,
-            //     channelName: v.snippet.channelTitle,
-            //     title: v.snippet.title,
-            //   })
-            // })
-            // setVideos(arr)
-          }
-        },
-        (error) => {
-          console.error('err=>', error)
+          // let arr: videos[] = []
+          // result.items.map((v, i) => {
+          //   arr.push({
+          //     videoId: v.id.videoId,
+          //     channelName: v.snippet.channelTitle,
+          //     title: v.snippet.title,
+          //   })
+          // })
+          // setVideos(arr)
         }
-      )
-  }, [channelID, apikey])
+      },
+      (error) => {
+        console.error('err=>', error)
+      }
+    )
+  }
+  // }, [channelID, apikey])
 
   // const onSearch = useCallback(
   //   (e: React.FormEvent<HTMLFormElement>) => {
@@ -160,7 +166,7 @@ const Home: NextPage = () => {
               <GoogleLogin
                 clientId={String(process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID)}
                 buttonText='Login'
-                isSignedIn={true}
+                // isSignedIn={true}
                 onSuccess={onSuccess}
                 onFailure={onFailure}
                 scope='https://www.googleapis.com/auth/youtube'
@@ -173,10 +179,11 @@ const Home: NextPage = () => {
               {accessToken}
 
               {/* Logout出来ないけど、後回し */}
-              <GoogleLogout
+              {/* <GoogleLogout
                 clientId={String(process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID)}
                 buttonText='Logout'
-              ></GoogleLogout>
+                onLogoutSuccess={logout}
+              ></GoogleLogout> */}
             </>
           )}
         </div>
