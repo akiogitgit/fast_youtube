@@ -15,6 +15,10 @@ interface videoInfo {
   viewCount: number
 }
 
+// 1.チャンネル名を検索しchannelIdを取得
+// 2.そのchannelIdから動画を取得
+// 3.その動画の再生回数などの情報を取得
+
 const YoutubeTest: NextPage = () => {
   const apikey = String(process.env.NEXT_PUBLIC_YOUTUBE_APIKEY)
   // const apikey = String(process.env.NEXT_PUBLIC_YOUTUBE_APIKEY2)
