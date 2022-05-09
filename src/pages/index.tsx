@@ -27,19 +27,19 @@ const Home: NextPage = () => {
   // const { data: session } = useSession()
   const apikey = String(process.env.NEXT_PUBLIC_YOUTUBE_APIKEY)
   // const apikey = String(process.env.NEXT_PUBLIC_YOUTUBE_APIKEY2)
-  const channelID = 'UCMJiPpN_09F0aWpQrgbc_qg' //配列にする
+  const kiyoID = 'UCMJiPpN_09F0aWpQrgbc_qg' //配列にする
 
-  const [videos, setVideos] = useState<string[]>([''])
-  const [channels, setChannels] = useState<string[]>([''])
+  const [videos, setVideos] = useState<string[]>([])
+  // const [channels, setChannels] = useState<string[]>([""])
+  // const channelIds = sessionStorage.getItem('channelId')?.split(',')
+  const [channelIds, setChannelIds] = useState([''])
   // const [word, setWord] = useState<string>('')
   // const [searchWord, setSearchWord] = useState<string>('にゃんこ')
 
   // 登録しているチャンネルidを取得
-  const search_channel_url = 'https://www.googleapis.com/youtube/v3/channels?'
   const subscript_url = 'https://www.googleapis.com/youtube/v3/subscriptions?'
   // チャンネル毎の動画を取得
   const search_api_url = 'https://www.googleapis.com/youtube/v3/search?'
-
   const getApi = async (url: string) => {
     try {
       const res = await fetch(url)
@@ -48,6 +48,11 @@ const Home: NextPage = () => {
       throw err
     }
   }
+  useEffect(() => {
+    if (sessionStorage.getItem('channelId')) {
+      setChannelIds(sessionStorage.getItem('channelId')?.split(',') || [''])
+    }
+  }, [])
 
   // channelIdを取得 subscriptions
   useEffect(() => {
@@ -67,7 +72,7 @@ const Home: NextPage = () => {
           })
           // setChannels(channelId)
           // console.log('resourcedId: ', result.items[0].snippet.resourceId)
-          console.log('channeId: ', channelId)
+          console.log('channeId取得: ', channelId)
           // console.log('channels: ', channels)
           sessionStorage.setItem('channelId', channelId.join())
         }
@@ -76,50 +81,47 @@ const Home: NextPage = () => {
         console.error('err=>', err)
       }
     )
-  }, [apikey, accessToken])
+  }, [accessToken])
 
   // 動画を取得
-  // useEffect(() => {
-  if (sessionStorage.getItem('channelId')) {
-    const channeIds = sessionStorage.getItem('channelId')?.split(',')
-    console.log('session: ', channeIds)
-    const params = {
-      part: 'snippet',
-      key: apikey,
-      channelId: channelID,
-      type: 'video',
-      maxResults: '10', // 取得数
-      order: 'data',
-    }
-    const queryParams = new URLSearchParams(params)
-    getApi(search_api_url + queryParams).then(
-      (result) => {
-        console.log('API success:', result)
-        if (result.items && result.items.length !== 0) {
-          // titleもチャンネル名もいらない(iframeでおけ)
-          // 縦方向がチャンネル、横方向が同じチャンネルの動画
-          const videosId = result.items.map((v, i) => {
-            return v.id.videoId
-          })
-          setVideos(videosId)
+  useEffect(() => {
+    if (channelIds) {
+      console.log('session: ', channelIds)
 
-          // let arr: videos[] = []
-          // result.items.map((v, i) => {
-          //   arr.push({
-          //     videoId: v.id.videoId,
-          //     channelName: v.snippet.channelTitle,
-          //     title: v.snippet.title,
-          //   })
-          // })
-          // setVideos(arr)
+      // 結構すぐに限度になる
+      channelIds?.map((channelId, i) => {
+        console.log(`channelId[${i}]`, channelId)
+        const params = {
+          part: 'snippet',
+          key: apikey,
+          // channelId: kiyoID,
+          channelId: channelId,
+          maxResults: '2', // 取得数
+          order: 'date',
         }
-      },
-      (error) => {
-        console.error('err=>', error)
-      }
-    )
-  }
-  // }, [channelID, apikey])
+        const queryParams = new URLSearchParams(params)
+        getApi(search_api_url + queryParams).then(
+          (result) => {
+            console.log('API success:', result)
+            if (result.items && result.items.length !== 0) {
+              const videosId = result.items.map((v, i) => {
+                return v.id.videoId
+              })
+              // setVideos([...videos, videosId])
+              setVideos(videosId)
+              console.log(`videosId[${i}]: `, videosId)
+              console.log(`10Videos[${i}]: `, videos)
+            }
+          },
+          (error) => {
+            console.error('err=>', error)
+          }
+        )
+      })
+      // [0]の動画Id yV7w3C6ZLkg
+      console.log('Allvideos: ', videos)
+    }
+  }, [channelIds])
 
   // const onSearch = useCallback(
   //   (e: React.FormEvent<HTMLFormElement>) => {
@@ -142,15 +144,6 @@ const Home: NextPage = () => {
 
       <header>
         <div className='translate-y-[-5px] slide-left'>
-          {/* {session ? (
-            <button className='danger-btn' onClick={() => signOut()}>
-              LogOut
-            </button>
-          ) : (
-            <button className='primary-btn' onClick={() => signIn()}>
-              LogIn
-            </button>
-          )} */}
           <div className='float-right'>
             <Link href='/youtubeTest'>test</Link>
             <Link href='/authPage'>authPage</Link>
@@ -192,6 +185,36 @@ const Home: NextPage = () => {
           <h1 className='text-red-500 text-[10px]'>
             Welcome to <a href='https://nextjs.org'>Next.js!</a>
           </h1>
+          {videos &&
+            videos.map((v, i) =>
+              v.map((video, index) => (
+                <div key={index}>
+                  <div>{video}</div>
+                  <iframe
+                    id='player'
+                    width='640'
+                    height='360'
+                    src={'https://www.youtube.com/embed/' + video}
+                    frameBorder='0'
+                    allowFullScreen
+                  />
+                </div>
+              ))
+            )}
+          {/* {videos &&
+            videos.map((v, i) => (
+              <div key={i}>
+                <iframe
+                  id='player'
+                  width='640'
+                  height='360'
+                  src={'https://www.youtube.com/embed/' + v}
+                  frameBorder='0'
+                  allowFullScreen
+                />
+              </div>
+            ))} */}
+
           {/* <form onSubmit={(e) => onSearch(e)}>
             <input
               type='text'
@@ -206,28 +229,6 @@ const Home: NextPage = () => {
             />
           </form>
           <div onClick={() => setSearchWord('わんこ')}>わんこ</div> */}
-          {videos &&
-            videos.map((v, i) => (
-              <div key={i}>
-                <iframe
-                  id='player'
-                  width='640'
-                  height='360'
-                  src={'https://www.youtube.com/embed/' + v}
-                  frameBorder='0'
-                  allowFullScreen
-                />
-              </div>
-            ))}
-          {/* <iframe
-            id='player'
-            width='640'
-            height='360'
-            src={'https://www.youtube.com/embed/' + videos}
-            // src={'https://www.youtube.com/embed/' + 'oEbtRMeZR24'}
-            frameBorder='0'
-            allowFullScreen
-          /> */}
         </div>
       </main>
       <footer></footer>
