@@ -25,8 +25,8 @@ const Home: NextPage = () => {
   }
 
   // const { data: session } = useSession()
-  const apikey = String(process.env.NEXT_PUBLIC_YOUTUBE_APIKEY)
-  // const apikey = String(process.env.NEXT_PUBLIC_YOUTUBE_APIKEY2)
+  // const apikey = String(process.env.NEXT_PUBLIC_YOUTUBE_APIKEY)
+  const apikey = String(process.env.NEXT_PUBLIC_YOUTUBE_APIKEY2)
   const kiyoID = 'UCMJiPpN_09F0aWpQrgbc_qg' //配列にする
 
   const [videos, setVideos] = useState<string[]>([])
@@ -104,13 +104,21 @@ const Home: NextPage = () => {
           (result) => {
             console.log('API success:', result)
             if (result.items && result.items.length !== 0) {
-              const videosId = result.items.map((v, i) => {
-                return v.id.videoId
-              })
+              //   const videosId = result.items.map((v, i) => {
+              //     return v.id.videoId
+              //   })
               // setVideos([...videos, videosId])
-              setVideos(videosId)
-              console.log(`videosId[${i}]: `, videosId)
-              console.log(`10Videos[${i}]: `, videos)
+              // setVideos(videosId)
+              let arr: string[] = videos
+              result.items.map((v, i) => {
+                arr.push(v.id.videoId)
+              })
+              setVideos(arr)
+              // result.items.map((v, i) => {
+              //   setVideos([...videos, v.id.videoId])
+              // })
+              // console.log(`videosId[${i}]: `, videosId)
+              console.log(`setVideos[${i}]: `, videos)
             }
           },
           (error) => {
@@ -185,35 +193,35 @@ const Home: NextPage = () => {
           <h1 className='text-red-500 text-[10px]'>
             Welcome to <a href='https://nextjs.org'>Next.js!</a>
           </h1>
-          {videos &&
-            videos.map((v, i) =>
-              v.map((video, index) => (
-                <div key={index}>
-                  <div>{video}</div>
-                  <iframe
-                    id='player'
-                    width='640'
-                    height='360'
-                    src={'https://www.youtube.com/embed/' + video}
-                    frameBorder='0'
-                    allowFullScreen
-                  />
-                </div>
-              ))
-            )}
           {/* {videos &&
-            videos.map((v, i) => (
-              <div key={i}>
-                <iframe
-                  id='player'
-                  width='640'
-                  height='360'
-                  src={'https://www.youtube.com/embed/' + v}
-                  frameBorder='0'
-                  allowFullScreen
-                />
-              </div>
-            ))} */}
+            videos.map(
+              (v, i) =>
+                v.map((video, index) => (
+                  <div key={index}>
+                    <div>{video}</div>
+                    <iframe
+                      id='player'
+                      width='640'
+                      height='360'
+                      src={'https://www.youtube.com/embed/' + video}
+                      frameBorder='0'
+                      allowFullScreen
+                    />
+                  </div>
+                ))
+            )} */}
+          {videos.map((v, i) => (
+            <div key={i}>
+              <iframe
+                id='player'
+                width='640'
+                height='360'
+                src={'https://www.youtube.com/embed/' + v}
+                frameBorder='0'
+                allowFullScreen
+              />
+            </div>
+          ))}
 
           {/* <form onSubmit={(e) => onSearch(e)}>
             <input
