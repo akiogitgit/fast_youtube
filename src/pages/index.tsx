@@ -4,6 +4,10 @@ import Link from 'next/link'
 import React, { useEffect, useState } from 'react'
 import { GoogleLogin, GoogleLogout } from 'react-google-login'
 
+interface video {
+  string: []
+}
+
 const Home: NextPage = () => {
   const [accessToken, setAccessToken] = useState('')
 
@@ -26,7 +30,7 @@ const Home: NextPage = () => {
   const apikey = String(process.env.NEXT_PUBLIC_YOUTUBE_APIKEY2)
   // const kiyoID = 'UCMJiPpN_09F0aWpQrgbc_qg' //配列にする
 
-  const [videos, setVideos] = useState<string[]>([])
+  const [videos, setVideos] = useState([])
   // const [channels, setChannels] = useState<string[]>([""])
   // const channelIds = sessionStorage.getItem('channelId')?.split(',')
   const [channelIds, setChannelIds] = useState([''])
@@ -202,24 +206,23 @@ const Home: NextPage = () => {
           <h1 className='text-red-500 text-[10px]'>
             Welcome to <a href='https://nextjs.org'>Next.js!</a>
           </h1>
-          {/* {videos &&
-            videos.map(
-              (v, i) =>
-                v.map((video, index) => (
-                  <div key={index}>
-                    <div>{video}</div>
-                    <iframe
-                      id='player'
-                      width='640'
-                      height='360'
-                      src={'https://www.youtube.com/embed/' + video}
-                      frameBorder='0'
-                      allowFullScreen
-                    />
-                  </div>
-                ))
-            )} */}
           {videos &&
+            videos.map((v, i) =>
+              v.map((video, index) => (
+                <div key={index}>
+                  <div>{video}</div>
+                  <iframe
+                    id='player'
+                    width='640'
+                    height='360'
+                    src={'https://www.youtube.com/embed/' + video}
+                    frameBorder='0'
+                    allowFullScreen
+                  />
+                </div>
+              ))
+            )}
+          {/* {videos &&
             videos.map((v, i) => (
               <div key={i}>
                 <iframe
@@ -231,8 +234,7 @@ const Home: NextPage = () => {
                   allowFullScreen
                 />
               </div>
-            ))}
-          {videos}
+            ))} */}
 
           {/* <form onSubmit={(e) => onSearch(e)}>
             <input
