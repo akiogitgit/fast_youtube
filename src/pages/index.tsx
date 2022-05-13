@@ -206,35 +206,24 @@ const Home: NextPage = () => {
           <h1 className='text-red-500 text-[10px]'>
             Welcome to <a href='https://nextjs.org'>Next.js!</a>
           </h1>
-          {videos &&
-            videos.map((v, i) =>
-              v.map((video, index) => (
-                <div key={index}>
-                  <div>{video}</div>
-                  <iframe
-                    id='player'
-                    width='640'
-                    height='360'
-                    src={'https://www.youtube.com/embed/' + video}
-                    frameBorder='0'
-                    allowFullScreen
-                  />
-                </div>
-              ))
-            )}
-          {/* {videos &&
-            videos.map((v, i) => (
-              <div key={i}>
-                <iframe
-                  id='player'
-                  width='640'
-                  height='360'
-                  src={'https://www.youtube.com/embed/' + v}
-                  frameBorder='0'
-                  allowFullScreen
-                />
+          <div>
+            {videos.map((v, i) => (
+              <div className='flex mb-4 overflow-x-scroll' key={i}>
+                {v.map((video, index) => (
+                  <div key={index}>
+                    <iframe
+                      id='player'
+                      width='300'
+                      height='200'
+                      src={'https://www.youtube.com/embed/' + video}
+                      frameBorder='0'
+                      allowFullScreen
+                    />
+                  </div>
+                ))}
               </div>
-            ))} */}
+            ))}
+          </div>
 
           {/* <form onSubmit={(e) => onSearch(e)}>
             <input
