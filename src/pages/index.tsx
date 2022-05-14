@@ -22,7 +22,7 @@ const Home: NextPage = () => {
   }
 
   // 限度になったら変える
-  const apikey = String(process.env.NEXT_PUBLIC_YOUTUBE_APIKEY)
+  // const apikey = String(process.env.NEXT_PUBLIC_YOUTUBE_APIKEY)
   // const apikey = String(process.env.NEXT_PUBLIC_YOUTUBE_APIKEY2)
   // const kiyoID = 'UCMJiPpN_09F0aWpQrgbc_qg' //配列にする
 
