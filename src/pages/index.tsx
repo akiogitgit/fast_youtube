@@ -23,10 +23,11 @@ const Home: NextPage = () => {
 
   // 限度になったら変える
   // const apikey = String(process.env.NEXT_PUBLIC_YOUTUBE_APIKEY)
-  // const apikey = String(process.env.NEXT_PUBLIC_YOUTUBE_APIKEY2)
-  // const kiyoID = 'UCMJiPpN_09F0aWpQrgbc_qg' //配列にする
+  const apikey = String(process.env.NEXT_PUBLIC_YOUTUBE_APIKEY2)
 
-  const [videos, setVideos] = useState([])
+  // const [videos, setVideos] = useState([])
+  const [videos, setVideos] = useState<string[][]>([])
+  // const [videos, setVideos] = useState<string[]>([])
   const [channelIds, setChannelIds] = useState([''])
   // const [word, setWord] = useState<string>('')
   // const [searchWord, setSearchWord] = useState<string>('にゃんこ')
@@ -43,11 +44,12 @@ const Home: NextPage = () => {
       throw err
     }
   }
+
   useEffect(() => {
     if (sessionStorage.getItem('channelId')) {
       setChannelIds(sessionStorage.getItem('channelId')?.split(',') || [''])
     }
-  }, [])
+  }, [accessToken])
 
   // channelIdを取得 subscriptions
   useEffect(() => {
@@ -84,7 +86,7 @@ const Home: NextPage = () => {
   useEffect(() => {
     if (channelIds) {
       console.log('session: ', channelIds)
-      let arr: string[] = [] // channelIDを入れる
+      let arr: string[][] = [] // channelIDを入れる
 
       // 結構すぐに限度になる
       channelIds?.map((channelId, i) => {
@@ -110,18 +112,22 @@ const Home: NextPage = () => {
               // result.items.map((v, i) => {
               //   arr.push(v.id.videoId)
               // })
-              const videosId = result.items.map((v, i) => {
+              const videosId: string[] = result.items.map((v, i) => {
                 return v.id.videoId
               })
               arr = [...arr, videosId]
-              // map の外でsetVideosをやる
-              setVideos(arr)
+              // setVideos(arr)
+
+              const arr2: string[][] = [...videos]
+              arr2.push(videosId)
+              setVideos(arr2)
               // result.items.map((v, i) => {
               //   setVideos([...videos, v.id.videoId])
               // })
               // console.log(`videosId[${i}]: `, videosId)
               console.log(`setVideos[${i}]: `, videos)
               console.log(`arr[${i}]: `, arr)
+              console.log(`arr2[${i}]: `, arr2)
             }
           },
           (error) => {
@@ -148,6 +154,19 @@ const Home: NextPage = () => {
   //   setWord(e.target.value)
   // }, [])
 
+  const deleteChannel = (channel: string) => {
+    if (channel) {
+      const index = channelIds.indexOf(channel)
+      if (index != -1) {
+        const arr = channelIds
+        arr.splice(index, 1)
+        setChannelIds(arr)
+        sessionStorage.setItem('channelId', channelIds.join())
+        // console.log('channelIds', channelIds)
+      }
+    }
+  }
+
   return (
     <div>
       <Head>
@@ -161,7 +180,7 @@ const Home: NextPage = () => {
           <div className='float-right'>
             <Link href='/youtubeTest'>test</Link>
             <Link href='/youtubeLayout'> layout</Link>
-            <Link href='/authPage'>authPage</Link>
+            <Link href='/authPage'> authPage</Link>
           </div>
         </div>
       </header>
@@ -202,19 +221,24 @@ const Home: NextPage = () => {
           </h1>
           <div>
             {videos.map((v, i) => (
-              <div className='flex mb-4 overflow-x-scroll' key={i}>
-                {v.map((video, index) => (
-                  <div key={index}>
-                    <iframe
-                      id='player'
-                      width='300'
-                      height='200'
-                      src={'https://www.youtube.com/embed/' + video}
-                      frameBorder='0'
-                      allowFullScreen
-                    />
-                  </div>
-                ))}
+              <div key={i}>
+                <p onClick={() => deleteChannel(channelIds[i])}>
+                  {channelIds[i]}このチャンネルを取得しない
+                </p>
+                <div className='flex mb-4 overflow-x-scroll'>
+                  {v.map((video, index) => (
+                    <div key={index}>
+                      <iframe
+                        id='player'
+                        width='300'
+                        height='200'
+                        src={'https://www.youtube.com/embed/' + video}
+                        frameBorder='0'
+                        allowFullScreen
+                      />
+                    </div>
+                  ))}
+                </div>
               </div>
             ))}
           </div>
