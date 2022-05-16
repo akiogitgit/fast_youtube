@@ -1,5 +1,4 @@
 import type { NextPage } from 'next'
-import { useSession, signIn, signOut } from 'next-auth/react'
 import Link from 'next/link'
 import React, { useEffect, useState } from 'react'
 import { GoogleLogin, GoogleLogout } from 'react-google-login'
@@ -7,7 +6,6 @@ import { GoogleLogin, GoogleLogout } from 'react-google-login'
 const AuthPage: NextPage = () => {
   // https://www.googleapis.com/oauth2/v3/tokeninfo?access_token=アクセストークン
   // https://www.googleapis.com/youtube/v3/channels?part=id&mine=true&key=APIKEY
-  const { data: session } = useSession()
   const [accessToken, setAccessToken] = useState('')
 
   const onSuccess = (
@@ -36,7 +34,6 @@ const AuthPage: NextPage = () => {
       // access_token: String(session?.accessToken),
       access_token: accessToken,
     }
-    console.log('accessToken', session?.accessToken)
     const queryParams = new URLSearchParams(params)
     fetch(search_channel_url + queryParams)
       .then((res) => res.json())
@@ -48,30 +45,17 @@ const AuthPage: NextPage = () => {
           console.error('err=>', error)
         }
       )
-  }, [session, accessToken])
+  }, [accessToken])
 
   return (
     <>
       <header>
         <div className='translate-y-[-5px] slide-left'>
-          {session ? (
-            <button className='danger-btn' onClick={() => signOut()}>
-              LogOut
-            </button>
-          ) : (
-            <button className='primary-btn' onClick={() => signIn()}>
-              LogIn
-            </button>
-          )}
           <div className='float-right'>
             <Link href='/'>index</Link>
           </div>
         </div>
       </header>
-      <div>{session?.user?.email}</div>
-      <div>{session?.user?.name}</div>
-      <div>{session?.accessToken}</div>
-      {console.log(session)}
 
       <div>
         {accessToken === '' ? (
