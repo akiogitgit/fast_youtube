@@ -94,32 +94,52 @@ const Home: NextPage = () => {
     return new URLSearchParams(params)
   }
 
-  const getVideos = useCallback(async () => {
-    if (!channelIds.length) {
-      return
-    }
-    let arr: videos = []
-    // channelIds.forEach((channelId, i) => {
-    // const queryParams = makeVideoQuery(channelId)
-    const queryParams = makeVideoQuery('UCg94A9An85nXCFSguNx3gYA')
-
-    getApi(search_api_url + queryParams).then(
+  const mapResult = channelIds.map((channelId) => {
+    const queryParams = makeVideoQuery(channelId)
+    return getApi(search_api_url + queryParams).then(
       (result) => {
         console.log('API success:', result)
         if (result.items && result.items.length !== 0) {
           const videosId: string[] = result.items.map((v, i) => {
             return v.id.videoId
           })
-          setVideos([...videos, videosId])
-          arr = [...arr, videosId]
-          console.log(`setVideos: `, videos)
-          console.log(`arr: `, arr)
+          setVideos((videos) => [...videos, videosId])
         }
       },
       (error) => {
         console.error('err=>', error)
       }
     )
+  })
+
+  const getVideos = useCallback(async () => {
+    if (!channelIds.length) {
+      return
+    }
+    const getAwaitPromiseAll = await Promise.all(mapResult)
+    console.log('Promise: ', getAwaitPromiseAll)
+    // let arr: videos = []
+    // channelIds.forEach((channelId, i) => {
+    //   const queryParams = makeVideoQuery(channelId)
+    //   // const queryParams = makeVideoQuery('UCg94A9An85nXCFSguNx3gYA')
+
+    //   getApi(search_api_url + queryParams).then(
+    //     (result) => {
+    //       console.log('API success:', result)
+    //       if (result.items && result.items.length !== 0) {
+    //         const videosId: string[] = result.items.map((v, i) => {
+    //           return v.id.videoId
+    //         })
+    //         setVideos([...videos, videosId])
+    //         arr = [...arr, videosId]
+    //         console.log(`setVideos: `, videos)
+    //         console.log(`arr: `, arr)
+    //       }
+    //     },
+    //     (error) => {
+    //       console.error('err=>', error)
+    //     }
+    //   )
     // })
   }, [])
 
