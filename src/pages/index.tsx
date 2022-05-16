@@ -1,8 +1,10 @@
 import type { NextPage } from 'next'
 import Head from 'next/head'
 import Link from 'next/link'
-import React, { useEffect, useState } from 'react'
+import React, { useCallback, useEffect, useState } from 'react'
 import { GoogleLogin, GoogleLogout } from 'react-google-login'
+
+type videos = string[][]
 
 const Home: NextPage = () => {
   const [accessToken, setAccessToken] = useState('')
@@ -26,8 +28,7 @@ const Home: NextPage = () => {
   const apikey = String(process.env.NEXT_PUBLIC_YOUTUBE_APIKEY2)
 
   // const [videos, setVideos] = useState([])
-  const [videos, setVideos] = useState<string[][]>([])
-  // const [videos, setVideos] = useState<string[]>([])
+  const [videos, setVideos] = useState<videos>([])
   const [channelIds, setChannelIds] = useState([''])
   // const [word, setWord] = useState<string>('')
   // const [searchWord, setSearchWord] = useState<string>('にゃんこ')
@@ -82,65 +83,50 @@ const Home: NextPage = () => {
     }
   }, [accessToken])
 
-  // 動画を取得
-  useEffect(() => {
-    if (channelIds) {
-      console.log('session: ', channelIds)
-      let arr: string[][] = [] // channelIDを入れる
-
-      // 結構すぐに限度になる
-      channelIds?.map((channelId, i) => {
-        console.log(`channelId[${i}]`, channelId)
-        const params = {
-          part: 'snippet',
-          key: apikey,
-          // channelId: kiyoID,
-          channelId: channelId,
-          maxResults: '2', // 取得数
-          order: 'date',
-        }
-        const queryParams = new URLSearchParams(params)
-        getApi(search_api_url + queryParams).then(
-          (result) => {
-            console.log('API success:', result)
-            if (result.items && result.items.length !== 0) {
-              //   const videosId = result.items.map((v, i) => {
-              //     return v.id.videoId
-              //   })
-              // setVideos([...videos, videosId])
-              // let arr: string[] = videos
-              // result.items.map((v, i) => {
-              //   arr.push(v.id.videoId)
-              // })
-              const videosId: string[] = result.items.map((v, i) => {
-                return v.id.videoId
-              })
-              arr = [...arr, videosId]
-              // setVideos(arr)
-
-              const arr2: string[][] = [...videos]
-              arr2.push(videosId)
-              setVideos(arr2)
-              // result.items.map((v, i) => {
-              //   setVideos([...videos, v.id.videoId])
-              // })
-              // console.log(`videosId[${i}]: `, videosId)
-              console.log(`setVideos[${i}]: `, videos)
-              console.log(`arr[${i}]: `, arr)
-              console.log(`arr2[${i}]: `, arr2)
-            }
-          },
-          (error) => {
-            console.error('err=>', error)
-          }
-        )
-      })
-      // if (arr.length != 0) {
-      //   setVideos(arr)
-      //   console.log('Allvideos: ', videos)
-      // }
-      // [0]の動画Id yV7w3C6ZLkg
+  const makeVideoQuery = (channelId: string) => {
+    const params = {
+      part: 'snippet',
+      key: apikey,
+      channelId: channelId,
+      maxResults: '3', // 取得数 1でも50でも消費量同じ
+      order: 'date',
     }
+    return new URLSearchParams(params)
+  }
+
+  const getVideos = useCallback(async () => {
+    if (!channelIds.length) {
+      return
+    }
+    let arr: videos = []
+    // channelIds.forEach((channelId, i) => {
+    // const queryParams = makeVideoQuery(channelId)
+    const queryParams = makeVideoQuery('UCg94A9An85nXCFSguNx3gYA')
+
+    getApi(search_api_url + queryParams).then(
+      (result) => {
+        console.log('API success:', result)
+        if (result.items && result.items.length !== 0) {
+          const videosId: string[] = result.items.map((v, i) => {
+            return v.id.videoId
+          })
+          setVideos([...videos, videosId])
+          arr = [...arr, videosId]
+          console.log(`setVideos: `, videos)
+          console.log(`arr: `, arr)
+        }
+      },
+      (error) => {
+        console.error('err=>', error)
+      }
+    )
+    // })
+  }, [])
+
+  // 動画を取得
+  // useEffect内でawait使えない
+  useEffect(() => {
+    getVideos()
   }, [channelIds])
 
   // const onSearch = useCallback(
@@ -204,8 +190,6 @@ const Home: NextPage = () => {
             <>
               <div className='mt-10'>react-google-auth!</div>
               {accessToken}
-
-              {/* Logout出来ないけど、後回し */}
               {/* <GoogleLogout
                 clientId={String(process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID)}
                 buttonText='Logout'
@@ -220,27 +204,53 @@ const Home: NextPage = () => {
             Welcome to <a href='https://nextjs.org'>Next.js!</a>
           </h1>
           <div>
-            {videos.map((v, i) => (
-              <div key={i}>
-                <p onClick={() => deleteChannel(channelIds[i])}>
-                  {channelIds[i]}このチャンネルを取得しない
-                </p>
-                <div className='flex mb-4 overflow-x-scroll'>
-                  {v.map((video, index) => (
-                    <div key={index}>
-                      <iframe
-                        id='player'
-                        width='300'
-                        height='200'
-                        src={'https://www.youtube.com/embed/' + video}
-                        frameBorder='0'
-                        allowFullScreen
-                      />
-                    </div>
-                  ))}
+            {/* {arr &&
+              arr.map((v, i) => (
+                <div key={i}>
+                  <p onClick={() => deleteChannel(channelIds[i])}>
+                    {channelIds[i]}このチャンネルを取得しない
+                  </p>
+                  <div className='flex mb-4 overflow-x-scroll'>
+                    {v.map((video, index) => (
+                      <div key={index}>
+                        <iframe
+                          id='player'
+                          width='300'
+                          height='200'
+                          src={'https://www.youtube.com/embed/' + video}
+                          frameBorder='0'
+                          allowFullScreen
+                        />
+                      </div>
+                    ))}
+                  </div>
                 </div>
-              </div>
-            ))}
+              ))} */}
+            <div>{videos && videos}</div>
+            <br></br>
+            <br></br>
+            {videos &&
+              videos.map((v, i) => (
+                <div key={i}>
+                  <p onClick={() => deleteChannel(channelIds[i])}>
+                    {channelIds[i]}このチャンネルを取得しない
+                  </p>
+                  <div className='flex mb-4 overflow-x-scroll'>
+                    {v.map((video, index) => (
+                      <div key={index}>
+                        <iframe
+                          id='player'
+                          width='300'
+                          height='200'
+                          src={'https://www.youtube.com/embed/' + video}
+                          frameBorder='0'
+                          allowFullScreen
+                        />
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ))}
           </div>
 
           {/* <form onSubmit={(e) => onSearch(e)}>
