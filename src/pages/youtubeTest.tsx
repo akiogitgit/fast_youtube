@@ -15,6 +15,23 @@ interface videoInfo {
   viewCount: number
 }
 
+type SearchItems = {
+  id: { videoId: string }
+  snippet: { channelTitle: string; title: string }
+}
+type ResultVideo = {
+  items: Array<SearchItems>
+}
+
+// const info = result.items.map((v, i) => {
+//   return v.statistics
+type InfoItems = {
+  statistics: videoInfo
+}
+type ResultVideoInfo = {
+  items: Array<InfoItems>
+}
+
 // 1.チャンネル名を検索しchannelIdを取得
 // 2.そのchannelIdから動画を取得
 // 3.その動画の再生回数などの情報を取得
@@ -32,7 +49,6 @@ const YoutubeTest: NextPage = () => {
 
   const search_api_url = 'https://www.googleapis.com/youtube/v3/search?'
   const videos_api_url = 'https://www.googleapis.com/youtube/v3/videos?'
-  // const search_channel_url = 'https://www.googleapis.com/youtube/v3/channel?'
 
   // チャンネル名からchannelIdを取得
   useEffect(() => {
@@ -78,18 +94,9 @@ const YoutubeTest: NextPage = () => {
     fetch(search_api_url + queryParams)
       .then((res) => res.json())
       .then(
-        (result) => {
+        (result: ResultVideo) => {
           console.log('videoId:', result)
           if (result.items && result.items.length !== 0) {
-            // if (result.items[0]) {
-            // const info = result.items.map((v, i) => {
-            //   return {
-            //     videoId: v.id.videoId,
-            //     channelName: v.snippet.channelTitle,
-            //     title: v.snippet.title,
-            //   }
-            // })
-            // setVideos(info)
             let arr: videos[] = []
             result.items.map((v, i) => {
               arr.push({
@@ -99,21 +106,7 @@ const YoutubeTest: NextPage = () => {
               })
             })
             setVideos(arr)
-            // setVideos([
-            //   result.items.map((v, i) => {
-            //     return {
-            //       videoId: v.id.videoId,
-            //       channelName: v.snippet.channelTitle,
-            //       title: v.snippet.title,
-            //     }
-            //   }),
-            // ])
             console.log('videos!!!:', videos)
-
-            // const videosId = result.items.map((v, i) => {
-            //   return v.id.videoId
-            // })
-            // setVideos(videosId)
           }
         },
         (error) => {
@@ -124,12 +117,6 @@ const YoutubeTest: NextPage = () => {
 
   // videoIdから再生回数を取得
   useEffect(() => {
-    // const params = {
-    //   part: 'statistics',
-    //   key: apikey,
-    //   id: (videos[0], videos[1]),
-    // }
-    // const queryParams = new URLSearchParams(params)
     const video_url =
       videos_api_url +
       'part=statistics' + // snippet タイトルサムネとか
@@ -139,7 +126,7 @@ const YoutubeTest: NextPage = () => {
     fetch(video_url)
       .then((res) => res.json())
       .then(
-        (result) => {
+        (result: ResultVideoInfo) => {
           console.log('動画情報:', result)
           if (result.items && result.items.length !== 0) {
             const info = result.items.map((v, i) => {

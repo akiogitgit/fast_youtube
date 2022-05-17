@@ -1,8 +1,21 @@
 import type { NextPage } from 'next'
 import Head from 'next/head'
 import Link from 'next/link'
-import React, { useEffect, useState } from 'react'
-import { GoogleLogin, GoogleLogout } from 'react-google-login'
+import React, { useCallback, useEffect, useState } from 'react'
+import { GoogleLogin } from 'react-google-login'
+
+type Videos = string[][]
+
+type SubscriptionItems = { snippet: { resourceId: { channelId: string } } }
+type ResultChannel = {
+  items: Array<SubscriptionItems>
+}
+
+type SearchItems = { id: { videoId: string } }
+type ResultVideo = {
+  // items: { id: { videoId: string } }[]
+  items: Array<SearchItems>
+}
 
 const Home: NextPage = () => {
   const [accessToken, setAccessToken] = useState('')
@@ -24,30 +37,30 @@ const Home: NextPage = () => {
   // 限度になったら変える
   const apikey = String(process.env.NEXT_PUBLIC_YOUTUBE_APIKEY)
   // const apikey = String(process.env.NEXT_PUBLIC_YOUTUBE_APIKEY2)
-  // const kiyoID = 'UCMJiPpN_09F0aWpQrgbc_qg' //配列にする
 
-  const [videos, setVideos] = useState([])
+  const [videos, setVideos] = useState<Videos>([])
   const [channelIds, setChannelIds] = useState([''])
-  // const [word, setWord] = useState<string>('')
-  // const [searchWord, setSearchWord] = useState<string>('にゃんこ')
 
   // 登録しているチャンネルidを取得
   const subscript_url = 'https://www.googleapis.com/youtube/v3/subscriptions?'
   // チャンネル毎の動画を取得
   const search_api_url = 'https://www.googleapis.com/youtube/v3/search?'
+
   const getApi = async (url: string) => {
     try {
       const res = await fetch(url)
       return await res.json()
-    } catch (err) {
-      throw err
+    } catch (error) {
+      throw error
     }
   }
+
+  // sessionから channelIdを取得
   useEffect(() => {
     if (sessionStorage.getItem('channelId')) {
       setChannelIds(sessionStorage.getItem('channelId')?.split(',') || [''])
     }
-  }, [])
+  }, [accessToken])
 
   // channelIdを取得 subscriptions
   useEffect(() => {
@@ -60,16 +73,14 @@ const Home: NextPage = () => {
       }
       const queryParams = new URLSearchParams(params)
       getApi(subscript_url + queryParams).then(
-        (result) => {
+        (result: ResultChannel) => {
           console.log('Loginした、channel情報:', result)
           if (result.items && result.items.length !== 0) {
-            let channelId = result.items.map((v, i) => {
+            const channelId = result.items.map((v, i) => {
               return v.snippet.resourceId.channelId
             })
-            // setChannels(channelId)
-            // console.log('resourcedId: ', result.items[0].snippet.resourceId)
             console.log('channeId取得: ', channelId)
-            // console.log('channels: ', channels)
+            setVideos([])
             sessionStorage.setItem('channelId', channelId.join())
           }
         },
@@ -80,73 +91,63 @@ const Home: NextPage = () => {
     }
   }, [accessToken])
 
-  // 動画を取得
-  useEffect(() => {
-    if (channelIds) {
-      console.log('session: ', channelIds)
-      let arr: string[] = [] // channelIDを入れる
+  const makeVideoQuery = (channelId: string) => {
+    const params = {
+      part: 'snippet',
+      key: apikey,
+      channelId: channelId,
+      maxResults: '3', // 取得数 1でも50でも消費量同じ
+      order: 'date',
+    }
+    return new URLSearchParams(params)
+  }
 
-      // 結構すぐに限度になる
-      channelIds?.map((channelId, i) => {
-        console.log(`channelId[${i}]`, channelId)
-        const params = {
-          part: 'snippet',
-          key: apikey,
-          // channelId: kiyoID,
-          channelId: channelId,
-          maxResults: '2', // 取得数
-          order: 'date',
-        }
-        const queryParams = new URLSearchParams(params)
-        getApi(search_api_url + queryParams).then(
-          (result) => {
+  const getVideos = useCallback(async () => {
+    if (!channelIds.length) {
+      return
+    }
+    const mapResult = channelIds.map((channelId) => {
+      if (channelId) {
+        const queryParams = makeVideoQuery(channelId)
+        return getApi(search_api_url + queryParams).then(
+          (result: ResultVideo) => {
             console.log('API success:', result)
             if (result.items && result.items.length !== 0) {
-              //   const videosId = result.items.map((v, i) => {
-              //     return v.id.videoId
-              //   })
-              // setVideos([...videos, videosId])
-              // let arr: string[] = videos
-              // result.items.map((v, i) => {
-              //   arr.push(v.id.videoId)
-              // })
-              const videosId = result.items.map((v, i) => {
+              const getVideosId: string[] = result.items.map((v, i) => {
                 return v.id.videoId
               })
-              arr = [...arr, videosId]
-              // map の外でsetVideosをやる
-              setVideos(arr)
-              // result.items.map((v, i) => {
-              //   setVideos([...videos, v.id.videoId])
-              // })
-              // console.log(`videosId[${i}]: `, videosId)
-              console.log(`setVideos[${i}]: `, videos)
-              console.log(`arr[${i}]: `, arr)
+              setVideos((videos) => [...videos, getVideosId])
             }
           },
           (error) => {
             console.error('err=>', error)
           }
         )
-      })
-      // if (arr.length != 0) {
-      //   setVideos(arr)
-      //   console.log('Allvideos: ', videos)
-      // }
-      // [0]の動画Id yV7w3C6ZLkg
-    }
+      }
+    })
+
+    const getAwaitPromiseAll = await Promise.all(mapResult)
+    console.log('Promise: ', getAwaitPromiseAll)
+    console.log('videos!: ', videos)
+    console.log('channelIds!: ', channelIds)
   }, [channelIds])
 
-  // const onSearch = useCallback(
-  //   (e: React.FormEvent<HTMLFormElement>) => {
-  //     e.preventDefault()
-  //     setSearchWord(word)
-  //   },
-  //   [word]
-  // )
-  // const changeWord = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-  //   setWord(e.target.value)
-  // }, [])
+  // 動画を取得
+  // useEffect内でawait使えない
+  useEffect(() => {
+    getVideos()
+  }, [getVideos])
+
+  const deleteChannel = (channel: string) => {
+    const index = channelIds.indexOf(channel)
+    if (index != -1) {
+      const arr: string[] = channelIds
+      arr.splice(index, 1)
+      setChannelIds(arr)
+      sessionStorage.setItem('channelId', channelIds.join())
+      console.log('delete', channelIds)
+    }
+  }
 
   return (
     <div>
@@ -161,78 +162,53 @@ const Home: NextPage = () => {
           <div className='float-right'>
             <Link href='/youtubeTest'>test</Link>
             <Link href='/youtubeLayout'> layout</Link>
-            <Link href='/authPage'>authPage</Link>
+            <Link href='/authPage'> authPage</Link>
           </div>
         </div>
       </header>
 
       <main>
         <div>
-          {accessToken === '' ? (
-            <>
-              {/* ページ遷移で消えるからヘッダーでやる */}
-              <GoogleLogin
-                clientId={String(process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID)}
-                buttonText='Login'
-                // isSignedIn={true}
-                onSuccess={onSuccess}
-                onFailure={onFailure}
-                scope='https://www.googleapis.com/auth/youtube'
-                cookiePolicy={'single_host_origin'}
-              />
-            </>
-          ) : (
-            <>
-              <div className='mt-10'>react-google-auth!</div>
-              {accessToken}
-
-              {/* Logout出来ないけど、後回し */}
-              {/* <GoogleLogout
-                clientId={String(process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID)}
-                buttonText='Logout'
-                onLogoutSuccess={logout}
-              ></GoogleLogout> */}
-            </>
-          )}
+          <GoogleLogin
+            clientId={String(process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID)}
+            buttonText='Login'
+            // isSignedIn={true}
+            onSuccess={onSuccess}
+            onFailure={onFailure}
+            scope='https://www.googleapis.com/auth/youtube'
+            cookiePolicy={'single_host_origin'}
+          />
         </div>
 
         <div>
-          <h1 className='text-red-500 text-[10px]'>
-            Welcome to <a href='https://nextjs.org'>Next.js!</a>
-          </h1>
           <div>
-            {videos.map((v, i) => (
-              <div className='flex mb-4 overflow-x-scroll' key={i}>
-                {v.map((video, index) => (
-                  <div key={index}>
-                    <iframe
-                      id='player'
-                      width='300'
-                      height='200'
-                      src={'https://www.youtube.com/embed/' + video}
-                      frameBorder='0'
-                      allowFullScreen
-                    />
+            <br></br>
+            {videos &&
+              videos.map((v, i) => (
+                <div key={i}>
+                  <p
+                    className='py-0.5 px-2 text-center cursor-pointer bg-red-600 text-white font-bold'
+                    onClick={() => deleteChannel(channelIds[i])}
+                  >
+                    このチャンネルを取得しない
+                  </p>
+                  <div className='flex mb-4 overflow-x-scroll'>
+                    {v.map((video, index) => (
+                      <div key={index}>
+                        <iframe
+                          id='player'
+                          width='300'
+                          height='200'
+                          src={'https://www.youtube.com/embed/' + video}
+                          frameBorder='0'
+                          allowFullScreen
+                        />
+                      </div>
+                    ))}
                   </div>
-                ))}
-              </div>
-            ))}
+                </div>
+              ))}
           </div>
-
-          {/* <form onSubmit={(e) => onSearch(e)}>
-            <input
-              type='text'
-              value={word}
-              onChange={changeWord}
-              className='border border-black'
-            />
-            <input
-              type='submit'
-              value='検索'
-              className='ml-2 border border-black'
-            />
-          </form>
-          <div onClick={() => setSearchWord('わんこ')}>わんこ</div> */}
         </div>
       </main>
       <footer></footer>
