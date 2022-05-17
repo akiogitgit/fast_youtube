@@ -4,7 +4,7 @@ import Link from 'next/link'
 import React, { useCallback, useEffect, useState } from 'react'
 import { GoogleLogin } from 'react-google-login'
 
-type videos = string[][]
+type Videos = string[][]
 
 type SubscriptionItems = { snippet: { resourceId: { channelId: string } } }
 type ResultChannel = {
@@ -38,16 +38,14 @@ const Home: NextPage = () => {
   const apikey = String(process.env.NEXT_PUBLIC_YOUTUBE_APIKEY)
   // const apikey = String(process.env.NEXT_PUBLIC_YOUTUBE_APIKEY2)
 
-  // const [videos, setVideos] = useState([])
-  const [videos, setVideos] = useState<videos>([])
+  const [videos, setVideos] = useState<Videos>([])
   const [channelIds, setChannelIds] = useState([''])
-  // const [word, setWord] = useState<string>('')
-  // const [searchWord, setSearchWord] = useState<string>('にゃんこ')
 
   // 登録しているチャンネルidを取得
   const subscript_url = 'https://www.googleapis.com/youtube/v3/subscriptions?'
   // チャンネル毎の動画を取得
   const search_api_url = 'https://www.googleapis.com/youtube/v3/search?'
+
   const getApi = async (url: string) => {
     try {
       const res = await fetch(url)
@@ -78,13 +76,11 @@ const Home: NextPage = () => {
         (result: ResultChannel) => {
           console.log('Loginした、channel情報:', result)
           if (result.items && result.items.length !== 0) {
-            let channelId = result.items.map((v, i) => {
+            const channelId = result.items.map((v, i) => {
               return v.snippet.resourceId.channelId
             })
-            // setChannels(channelId)
-            // console.log('resourcedId: ', result.items[0].snippet.resourceId)
             console.log('channeId取得: ', channelId)
-            // console.log('channels: ', channels)
+            setVideos([])
             sessionStorage.setItem('channelId', channelId.join())
           }
         },
@@ -111,26 +107,29 @@ const Home: NextPage = () => {
       return
     }
     const mapResult = channelIds.map((channelId) => {
-      const queryParams = makeVideoQuery(channelId)
-      return getApi(search_api_url + queryParams).then(
-        (result: ResultVideo) => {
-          console.log('API success:', result)
-          if (result.items && result.items.length !== 0) {
-            const getVideosId: string[] = result.items.map((v, i) => {
-              return v.id.videoId
-            })
-            setVideos((videos) => [...videos, getVideosId])
+      if (channelId) {
+        const queryParams = makeVideoQuery(channelId)
+        return getApi(search_api_url + queryParams).then(
+          (result: ResultVideo) => {
+            console.log('API success:', result)
+            if (result.items && result.items.length !== 0) {
+              const getVideosId: string[] = result.items.map((v, i) => {
+                return v.id.videoId
+              })
+              setVideos((videos) => [...videos, getVideosId])
+            }
+          },
+          (error) => {
+            console.error('err=>', error)
           }
-        },
-        (error) => {
-          console.error('err=>', error)
-        }
-      )
+        )
+      }
     })
 
     const getAwaitPromiseAll = await Promise.all(mapResult)
     console.log('Promise: ', getAwaitPromiseAll)
     console.log('videos!: ', videos)
+    console.log('channelIds!: ', channelIds)
   }, [channelIds])
 
   // 動画を取得
@@ -139,27 +138,14 @@ const Home: NextPage = () => {
     getVideos()
   }, [getVideos])
 
-  // const onSearch = useCallback(
-  //   (e: React.FormEvent<HTMLFormElement>) => {
-  //     e.preventDefault()
-  //     setSearchWord(word)
-  //   },
-  //   [word]
-  // )
-  // const changeWord = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-  //   setWord(e.target.value)
-  // }, [])
-
   const deleteChannel = (channel: string) => {
-    if (channel) {
-      const index = channelIds.indexOf(channel)
-      if (index != -1) {
-        const arr = channelIds
-        arr.splice(index, 1)
-        setChannelIds(arr)
-        sessionStorage.setItem('channelId', channelIds.join())
-        // console.log('channelIds', channelIds)
-      }
+    const index = channelIds.indexOf(channel)
+    if (index != -1) {
+      const arr: string[] = channelIds
+      arr.splice(index, 1)
+      setChannelIds(arr)
+      sessionStorage.setItem('channelId', channelIds.join())
+      console.log('delete', channelIds)
     }
   }
 
@@ -195,16 +181,16 @@ const Home: NextPage = () => {
         </div>
 
         <div>
-          <h1 className='text-red-500 text-[10px]'>
-            Welcome to <a href='https://nextjs.org'>Next.js!</a>
-          </h1>
           <div>
             <br></br>
             {videos &&
               videos.map((v, i) => (
                 <div key={i}>
-                  <p onClick={() => deleteChannel(channelIds[i])}>
-                    {channelIds[i]}このチャンネルを取得しない
+                  <p
+                    className='py-0.5 px-2 text-center cursor-pointer bg-red-600 text-white font-bold'
+                    onClick={() => deleteChannel(channelIds[i])}
+                  >
+                    このチャンネルを取得しない
                   </p>
                   <div className='flex mb-4 overflow-x-scroll'>
                     {v.map((video, index) => (
@@ -223,21 +209,6 @@ const Home: NextPage = () => {
                 </div>
               ))}
           </div>
-
-          {/* <form onSubmit={(e) => onSearch(e)}>
-            <input
-              type='text'
-              value={word}
-              onChange={changeWord}
-              className='border border-black'
-            />
-            <input
-              type='submit'
-              value='検索'
-              className='ml-2 border border-black'
-            />
-          </form>
-          <div onClick={() => setSearchWord('わんこ')}>わんこ</div> */}
         </div>
       </main>
       <footer></footer>
