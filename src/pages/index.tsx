@@ -148,7 +148,7 @@ const Home: NextPage = () => {
       // videos
       videoIds
         .map((v) => {
-          return v.join().replace(',', ' ')
+          return v.join().replace(/,/g, ' ')
         })
         .join()
     )
@@ -162,7 +162,9 @@ const Home: NextPage = () => {
   // useEffect内でawait使えない
   useEffect(() => {
     // ログインした時のみ実行
-    getVideos()
+    if (accessToken) {
+      getVideos()
+    }
   }, [getVideos])
 
   const deleteChannel = (channel: string) => {
