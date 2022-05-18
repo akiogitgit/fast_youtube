@@ -62,6 +62,18 @@ const Home: NextPage = () => {
     }
   }, [accessToken])
 
+  useEffect(() => {
+    if (sessionStorage.getItem('videoId')) {
+      setVideos(
+        String(sessionStorage.getItem('videoId'))
+          .split(',')
+          .map((v) => {
+            return v.trim().replace(/\s+/g, ' ').split(' ')
+          })
+      )
+    }
+  }, [])
+
   // channelIdを取得 subscriptions
   useEffect(() => {
     if (accessToken) {
@@ -106,6 +118,8 @@ const Home: NextPage = () => {
     if (!channelIds.length) {
       return
     }
+    const videoIds: Videos = []
+
     const mapResult = channelIds.map((channelId) => {
       if (channelId) {
         const queryParams = makeVideoQuery(channelId)
@@ -117,6 +131,7 @@ const Home: NextPage = () => {
                 return v.id.videoId
               })
               setVideos((videos) => [...videos, getVideosId])
+              videoIds.push(getVideosId)
             }
           },
           (error) => {
@@ -127,14 +142,26 @@ const Home: NextPage = () => {
     })
 
     const getAwaitPromiseAll = await Promise.all(mapResult)
+    // videosIdを文字列にして格納 値が入らない！！
+    sessionStorage.setItem(
+      'videoId',
+      // videos
+      videoIds
+        .map((v) => {
+          return v.join().replace(',', ' ')
+        })
+        .join()
+    )
+
     console.log('Promise: ', getAwaitPromiseAll)
     console.log('videos!: ', videos)
+    console.log('videoIDs: ', videoIds)
     console.log('channelIds!: ', channelIds)
-  }, [channelIds])
+  }, [channelIds]) // accessTokenでよくね？
 
-  // 動画を取得
   // useEffect内でawait使えない
   useEffect(() => {
+    // ログインした時のみ実行
     getVideos()
   }, [getVideos])
 
