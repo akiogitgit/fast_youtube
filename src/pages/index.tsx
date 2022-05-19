@@ -60,8 +60,9 @@ const Home: NextPage = () => {
     if (sessionStorage.getItem('channelId')) {
       setChannelIds(sessionStorage.getItem('channelId')?.split(',') || [''])
     }
-  }, [accessToken])
+  }, []) //accessToken
 
+  // videos
   useEffect(() => {
     if (sessionStorage.getItem('videoId')) {
       setVideos(
@@ -72,7 +73,7 @@ const Home: NextPage = () => {
           })
       )
     }
-  }, [])
+  }, [channelIds])
 
   // channelIdを取得 subscriptions
   useEffect(() => {
@@ -101,7 +102,7 @@ const Home: NextPage = () => {
         }
       )
     }
-  }, [accessToken])
+  }, [accessToken, apikey])
 
   const makeVideoQuery = (channelId: string) => {
     const params = {
@@ -157,15 +158,16 @@ const Home: NextPage = () => {
     console.log('videos!: ', videos)
     console.log('videoIDs: ', videoIds)
     console.log('channelIds!: ', channelIds)
-  }, [channelIds]) // accessTokenでよくね？
+  }, [channelIds, videos]) // accessTokenでよくね？
 
   // useEffect内でawait使えない
   useEffect(() => {
     // ログインした時のみ実行
-    if (accessToken) {
-      getVideos()
-    }
-  }, [getVideos])
+    // if (accessToken) {
+    getVideos()
+    // }
+  }, [getVideos, accessToken])
+  console.log('channelIds', channelIds)
 
   const deleteChannel = (channel: string) => {
     const index = channelIds.indexOf(channel)
