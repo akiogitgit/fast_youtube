@@ -59,8 +59,9 @@ const Home: NextPage = () => {
   useEffect(() => {
     if (sessionStorage.getItem('channelId')) {
       setChannelIds(sessionStorage.getItem('channelId')?.split(',') || [''])
+      console.log('sessionからchannelIdをセット！', channelIds)
     }
-  }, []) //accessToken
+  }, [accessToken]) //accessToken
 
   // videos
   useEffect(() => {
@@ -72,8 +73,9 @@ const Home: NextPage = () => {
             return v.trim().replace(/\s+/g, ' ').split(' ')
           })
       )
+      console.log('sessionからvideosをセット！', videos)
     }
-  }, [channelIds])
+  }, [accessToken, channelIds])
 
   // channelIdを取得 subscriptions
   useEffect(() => {
@@ -92,7 +94,7 @@ const Home: NextPage = () => {
             const channelId = result.items.map((v, i) => {
               return v.snippet.resourceId.channelId
             })
-            console.log('channeId取得: ', channelId)
+            console.log('API channeId取得: ', channelId)
             setVideos([])
             sessionStorage.setItem('channelId', channelId.join())
           }
@@ -116,7 +118,8 @@ const Home: NextPage = () => {
   }
 
   const getVideos = useCallback(async () => {
-    if (!channelIds.length) {
+    // 何度も取得しないように
+    if (!channelIds.length || videos.length > channelIds.length) {
       return
     }
     const videoIds: Videos = []
@@ -144,29 +147,37 @@ const Home: NextPage = () => {
 
     const getAwaitPromiseAll = await Promise.all(mapResult)
     // videosIdを文字列にして格納 値が入らない！！
-    sessionStorage.setItem(
-      'videoId',
-      // videos
-      videoIds
-        .map((v) => {
-          return v.join().replace(/,/g, ' ')
-        })
-        .join()
-    )
+    // なんか空白が入る時ある
+    if (videoIds && videoIds.length) {
+      sessionStorage.setItem(
+        'videoId',
+        // videos
+        videoIds
+          .map((v) => {
+            return v.join().replace(/,/g, ' ')
+          })
+          .join()
+      )
+    }
 
     console.log('Promise: ', getAwaitPromiseAll)
     console.log('videos!: ', videos)
     console.log('videoIDs: ', videoIds)
     console.log('channelIds!: ', channelIds)
-  }, [channelIds, videos]) // accessTokenでよくね？
+  }, [channelIds, accessToken]) // accessTokenでよくね？
 
   // useEffect内でawait使えない
   useEffect(() => {
-    // ログインした時のみ実行
-    // if (accessToken) {
-    getVideos()
-    // }
-  }, [getVideos, accessToken])
+    // ログインした時、videos(session video)が空で channelIdsある時
+    // あとは時間経過で実行
+    if ((!videos.length && channelIds) || accessToken) {
+      console.log('一つ目のif')
+      if ((sessionStorage.getItem('videoId')?.length || 0) < 2) {
+        getVideos()
+      }
+    }
+  }, [getVideos, accessToken, channelIds])
+
   console.log('channelIds', channelIds)
 
   const deleteChannel = (channel: string) => {
