@@ -129,7 +129,7 @@ const Home: NextPage = () => {
         const queryParams = makeVideoQuery(channelId)
         return getApi(search_api_url + queryParams).then(
           (result: ResultVideo) => {
-            console.log('API success:', result)
+            console.log('API videos取得:', result)
             if (result.items && result.items.length !== 0) {
               const getVideosId: string[] = result.items.map((v, i) => {
                 return v.id.videoId
@@ -170,15 +170,16 @@ const Home: NextPage = () => {
   useEffect(() => {
     // ログインした時、videos(session video)が空で channelIdsある時
     // あとは時間経過で実行
-    if ((!videos.length && channelIds) || accessToken) {
-      console.log('一つ目のif')
-      if ((sessionStorage.getItem('videoId')?.length || 0) < 2) {
-        getVideos()
-      }
+
+    // accessToken || sessionなくてchannelある || 時間経過
+    // videoIdがあっても、accessTokenで更新 channelなければ実行されない
+    if (
+      ((sessionStorage.getItem('videoId')?.length || 0) === 0 && channelIds) ||
+      accessToken
+    ) {
+      getVideos()
     }
   }, [getVideos, accessToken, channelIds])
-
-  console.log('channelIds', channelIds)
 
   const deleteChannel = (channel: string) => {
     const index = channelIds.indexOf(channel)
