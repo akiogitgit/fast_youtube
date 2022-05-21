@@ -142,7 +142,7 @@ const Home: NextPage = () => {
         const queryParams = makeVideoQuery(channelId)
         return getApi(search_api_url + queryParams).then(
           (result: ResultVideo) => {
-            console.log('API videos取得:', result)
+            console.log('API videos取得^^^^^^^^^^^^^^^^^^^^^^:', result)
             if (result.items && result.items.length !== 0) {
               const getVideosId: string[] = result.items.map((v, i) => {
                 return v.id.videoId
@@ -190,12 +190,7 @@ const Home: NextPage = () => {
     if (
       ((sessionStorage.getItem('videoId')?.length || 0) === 0 && channelIds) ||
       accessToken ||
-      !sessionDate
-      // ||
-      // !sessionStorage.getItem('setTime')?.length ||
-      // 0 ||
-      // (sessionStorage.getItem('setTime') &&
-      //   Number(sessionStorage.getItem('setTime')) + 60000 < date2)
+      sessionDate + 3600000 < date2
     ) {
       getVideos()
     }
@@ -245,7 +240,8 @@ const Home: NextPage = () => {
 
         <div>
           <div>
-            {sessionDate}
+            {/* <div>現在：{String(date2)}</div> */}
+            session: {sessionDate}
             <br></br>
             {videos &&
               videos.map((v, i) => (
