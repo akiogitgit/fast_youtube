@@ -21,12 +21,7 @@ const Home: NextPage = () => {
   const [accessToken, setAccessToken] = useState('')
   const date = new Date()
   const date2 = date.getTime()
-  // let sessionDate = 0
-  // if (sessionStorage.getItem('setDate')) {
-  //   sessionDate = Number(sessionStorage.getItem('setDate'))
-  // }
   const [sessionDate, setSessionDate] = useState(0)
-  console.log(date2)
 
   const onSuccess = (
     res:
@@ -49,9 +44,7 @@ const Home: NextPage = () => {
   const [videos, setVideos] = useState<Videos>([])
   const [channelIds, setChannelIds] = useState([''])
 
-  // 登録しているチャンネルidを取得
   const subscript_url = 'https://www.googleapis.com/youtube/v3/subscriptions?'
-  // チャンネル毎の動画を取得
   const search_api_url = 'https://www.googleapis.com/youtube/v3/search?'
 
   const getApi = async (url: string) => {
@@ -70,13 +63,14 @@ const Home: NextPage = () => {
       console.log('sessionからchannelIdをセット！', channelIds)
     }
 
+    // 取得した時の日時を取得
     if (sessionStorage.getItem('setDate')) {
       setSessionDate(Number(sessionStorage.getItem('setDate')))
       console.log('sessionDate', sessionDate)
     }
-  }, [accessToken]) //accessToken
+  }, [accessToken])
 
-  // videos
+  // videoIDを取得
   useEffect(() => {
     if (sessionStorage.getItem('videoId')) {
       setVideos(
@@ -124,7 +118,7 @@ const Home: NextPage = () => {
       part: 'snippet',
       key: apikey,
       channelId: channelId,
-      maxResults: '3', // 取得数 1でも50でも消費量同じ
+      maxResults: '20', // 取得数 1でも50でも消費量同じ
       order: 'date',
     }
     return new URLSearchParams(params)
@@ -159,12 +153,9 @@ const Home: NextPage = () => {
     })
 
     const getAwaitPromiseAll = await Promise.all(mapResult)
-    // videosIdを文字列にして格納 値が入らない！！
-    // なんか空白が入る時ある
     if (videoIds && videoIds.length) {
       sessionStorage.setItem(
         'videoId',
-        // videos
         videoIds
           .map((v) => {
             return v.join().replace(/,/g, ' ')
@@ -240,8 +231,6 @@ const Home: NextPage = () => {
 
         <div>
           <div>
-            {/* <div>現在：{String(date2)}</div> */}
-            session: {sessionDate}
             <br></br>
             {videos &&
               videos.map((v, i) => (
