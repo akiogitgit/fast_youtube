@@ -19,6 +19,9 @@ type ResultVideo = {
 
 const Home: NextPage = () => {
   const [accessToken, setAccessToken] = useState('')
+  const date = new Date()
+  const date2 = date.getTime()
+  console.log(date2)
 
   const onSuccess = (
     res:
