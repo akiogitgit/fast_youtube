@@ -21,6 +21,11 @@ const Home: NextPage = () => {
   const [accessToken, setAccessToken] = useState('')
   const date = new Date()
   const date2 = date.getTime()
+  // let sessionDate = 0
+  // if (sessionStorage.getItem('setDate')) {
+  //   sessionDate = Number(sessionStorage.getItem('setDate'))
+  // }
+  const [sessionDate, setSessionDate] = useState(0)
   console.log(date2)
 
   const onSuccess = (
@@ -63,6 +68,11 @@ const Home: NextPage = () => {
     if (sessionStorage.getItem('channelId')) {
       setChannelIds(sessionStorage.getItem('channelId')?.split(',') || [''])
       console.log('sessionからchannelIdをセット！', channelIds)
+    }
+
+    if (sessionStorage.getItem('setDate')) {
+      setSessionDate(Number(sessionStorage.getItem('setDate')))
+      console.log('sessionDate', sessionDate)
     }
   }, [accessToken]) //accessToken
 
@@ -161,13 +171,15 @@ const Home: NextPage = () => {
           })
           .join()
       )
+      // sessionに格納した時間も格納
+      sessionStorage.setItem('setDate', String(date2))
     }
 
     console.log('Promise: ', getAwaitPromiseAll)
     console.log('videos!: ', videos)
     console.log('videoIDs: ', videoIds)
     console.log('channelIds!: ', channelIds)
-  }, [channelIds, accessToken]) // accessTokenでよくね？
+  }, [channelIds, accessToken, date2]) // accessTokenでよくね？
 
   // useEffect内でawait使えない
   useEffect(() => {
@@ -175,14 +187,19 @@ const Home: NextPage = () => {
     // あとは時間経過で実行
 
     // accessToken || sessionなくてchannelある || 時間経過
-    // videoIdがあっても、accessTokenで更新 channelなければ実行されない
     if (
       ((sessionStorage.getItem('videoId')?.length || 0) === 0 && channelIds) ||
-      accessToken
+      accessToken ||
+      !sessionDate
+      // ||
+      // !sessionStorage.getItem('setTime')?.length ||
+      // 0 ||
+      // (sessionStorage.getItem('setTime') &&
+      //   Number(sessionStorage.getItem('setTime')) + 60000 < date2)
     ) {
       getVideos()
     }
-  }, [getVideos, accessToken, channelIds])
+  }, [getVideos, accessToken, channelIds, sessionDate])
 
   const deleteChannel = (channel: string) => {
     const index = channelIds.indexOf(channel)
@@ -228,6 +245,7 @@ const Home: NextPage = () => {
 
         <div>
           <div>
+            {sessionDate}
             <br></br>
             {videos &&
               videos.map((v, i) => (
