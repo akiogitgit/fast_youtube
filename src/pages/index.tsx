@@ -46,6 +46,7 @@ const Home: NextPage = () => {
 
   const subscript_url = 'https://www.googleapis.com/youtube/v3/subscriptions?'
   const search_api_url = 'https://www.googleapis.com/youtube/v3/search?'
+  const env = process.env.NODE_ENV
 
   const getApi = async (url: string) => {
     try {
@@ -219,7 +220,11 @@ const Home: NextPage = () => {
       <main>
         <div>
           <GoogleLogin
-            clientId={String(process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID)}
+            clientId={
+              env === 'development'
+                ? String(process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID)
+                : String(process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID2)
+            }
             buttonText='Login'
             // isSignedIn={true}
             onSuccess={onSuccess}
