@@ -220,12 +220,7 @@ const Home: NextPage = () => {
       <main>
         <div>
           <GoogleLogin
-            // clientId={
-            //   env === 'development'
-            //     ? String(process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID)
-            //     : String(process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID2)
-            // }
-            clientId={String(process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID2)}
+            clientId={String(process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID)}
             buttonText='Login'
             // isSignedIn={true}
             onSuccess={onSuccess}
