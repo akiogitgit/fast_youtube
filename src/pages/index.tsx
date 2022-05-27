@@ -119,7 +119,7 @@ const Home: NextPage = () => {
       part: 'snippet',
       key: apikey,
       channelId: channelId,
-      maxResults: '20', // 取得数 1でも50でも消費量同じ
+      maxResults: '5', // 取得数 1でも50でも消費量同じ
       order: 'date',
     }
     return new URLSearchParams(params)
